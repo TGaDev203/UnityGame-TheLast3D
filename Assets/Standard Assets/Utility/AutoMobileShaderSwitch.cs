@@ -15,7 +15,7 @@ namespace UnityStandardAssets.Utility
         private void OnEnable()
         {
 #if UNITY_IPHONE || UNITY_ANDROID || UNITY_WP8 || UNITY_BLACKBERRY
-			var renderers = FindObjectsOfType<Renderer>();
+			var renderers = FindObjectsByType<Renderer>(FindObjectsSortMode.None);
 			Debug.Log (renderers.Length+" renderers");
 			var oldMaterials = new List<Material>();
 			var newMaterials = new List<Material>();
