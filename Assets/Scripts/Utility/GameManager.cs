@@ -6,7 +6,7 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        Application.targetFrameRate = -1;
+        Application.targetFrameRate = 144;
         QualitySettings.vSyncCount = 0;
     }
 
@@ -18,7 +18,7 @@ public class GameManager : MonoBehaviour
     private void OnGUI()
     {
         int height = Screen.height;
-        int padding = 20;
+        int padding = 50;
         int fontSize = height * 4 / 100;
 
         GUIStyle style = new GUIStyle();
