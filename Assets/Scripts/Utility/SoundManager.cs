@@ -9,6 +9,8 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private AudioSource soundEffectAudioSource;
     [SerializeField] private float footstepInterval;
     private float footstepTimer;
+    private float nextFootstepTime;
+
 
     private void Awake()
     {
@@ -29,11 +31,11 @@ public class SoundManager : MonoBehaviour
 
     public void PlayFootStepSounds()
     {
-        if (footstepTimer <= 0f && footStepSounds.Length > 0)
+        if (Time.time >= nextFootstepTime && footStepSounds.Length > 0)
         {
             int index = Random.Range(0, footStepSounds.Length);
             soundEffectAudioSource.PlayOneShot(footStepSounds[index]);
-            footstepTimer = footstepInterval;
+            nextFootstepTime = Time.time + footstepInterval;
         }
     }
 

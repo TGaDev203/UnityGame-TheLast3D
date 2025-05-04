@@ -108,7 +108,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
                         // Get input for looking around
                         if (touch.fingerId == leftFingerId)
                         {
-                            SoundManager.Instance.PlayFootStepSounds();
                             // Caculating the position delta from the start position
                             input = touch.position - moveTouchStartPosition;
                         }
@@ -154,6 +153,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             // Move relatively to the local transform's direction
             characterController.Move(transform.right * movementDirection.x + transform.forward * movementDirection.y);
             characterAnimation.PlayWalkingAnimation();
+            SoundManager.Instance.PlayFootStepSounds();
         }
     }
 }
