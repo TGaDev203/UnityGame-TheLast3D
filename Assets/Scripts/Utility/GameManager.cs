@@ -38,7 +38,6 @@ public class GameManager : MonoBehaviour
         GUI.Box(rect, GUIContent.none);
         GUI.color = previousColor;
 
-        // Draw the text
         GUI.Label(rect, text, style);
     }
 }

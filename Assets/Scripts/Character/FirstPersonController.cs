@@ -9,9 +9,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private float moveInputDeadZone;
         [SerializeField] private float runSpeed;
         [SerializeField] private float walkSpeed;
-        // [SerializeField] private AudioClip[] m_FootstepSounds;
-        // [SerializeField] private AudioClip m_JumpSound;
-        // [SerializeField] private AudioClip m_LandSound;
         private CharacterController characterController;
         private CharacterAnimation characterAnimation;
         private Vector2 moveTouchStartPosition;
@@ -109,14 +106,15 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
                     case TouchPhase.Moved:
                         // Get input for looking around
-                        if (touch.fingerId == rightFingerId)
+                        if (touch.fingerId == leftFingerId)
                         {
-                            lookInput = touch.deltaPosition * cameraSensitivity * Time.deltaTime;
-                        }
-                        else if (touch.fingerId == leftFingerId)
-                        {
+                            SoundManager.Instance.PlayFootStepSounds();
                             // Caculating the position delta from the start position
                             input = touch.position - moveTouchStartPosition;
+                        }
+                        else if (touch.fingerId == rightFingerId)
+                        {
+                            lookInput = touch.deltaPosition * cameraSensitivity * Time.deltaTime;
                         }
 
                         break;
@@ -142,40 +140,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
             transform.Rotate(transform.up, lookInput.x);
         }
 
-        // private void PlayLandingSound()
-        // {
-        //     m_AudioSource.clip = m_LandSound;
-        //     m_AudioSource.Play();
-        // }
-
-        // private void PlayJumpSound()
-        // {
-        //     m_AudioSource.clip = m_JumpSound;
-        //     m_AudioSource.Play();
-        // }
-
-        // private void PlayFootStepAudio()
-        // {
-        //     if (!m_CharacterController.isGrounded)
-        //     {
-        //         return;
-        //     }
-        //     // pick & play a random footstep sound from the array,
-        //     // excluding sound at index 0
-        //     int n = Random.Range(1, m_FootstepSounds.Length);
-        //     m_AudioSource.clip = m_FootstepSounds[n];
-        //     m_AudioSource.PlayOneShot(m_AudioSource.clip);
-        //     // move picked sound to index 0 so it's not picked next time
-        //     m_FootstepSounds[n] = m_FootstepSounds[0];
-        //     m_FootstepSounds[0] = m_AudioSource.clip;
-        // }
-
         private void Move()
         {
             // Do not move if the touch delta is shorter than the designated dead zone
             if (input.sqrMagnitude <= moveInputDeadZone)
             {
-                // characterAnimation.StopWalkingAmimation();
                 return;
             }
 

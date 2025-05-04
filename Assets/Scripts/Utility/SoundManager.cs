@@ -7,20 +7,41 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private AudioClip[] footStepSounds;
     [SerializeField] private AudioSource backgroundAudioSource;
     [SerializeField] private AudioSource soundEffectAudioSource;
+    [SerializeField] private float footstepInterval;
+    private float footstepTimer;
 
-    public void PlayFootStepSounds()
+    private void Awake()
     {
-        if (footStepSounds != null && footStepSounds.Length > 0)
+        if (Instance == null)
         {
-            int index = Random.Range(0, footStepSounds.Length);
-            PlaySound(footStepSounds[index]);
+            Instance = this;
+        }
+        else Destroy(gameObject);
+    }
+
+    private void Update()
+    {
+        if (footstepTimer > 0)
+        {
+            footstepTimer -= Time.deltaTime;
         }
     }
 
-    private void PlaySound(AudioClip clip)
+    public void PlayFootStepSounds()
+    {
+        if (footstepTimer <= 0f && footStepSounds.Length > 0)
+        {
+            int index = Random.Range(0, footStepSounds.Length);
+            soundEffectAudioSource.PlayOneShot(footStepSounds[index]);
+            footstepTimer = footstepInterval;
+        }
+    }
+
+    public void PlaySound(AudioClip clip)
     {
         if (clip != null)
         {
+            soundEffectAudioSource.clip = clip;
             soundEffectAudioSource.PlayOneShot(clip);
         }
     }
