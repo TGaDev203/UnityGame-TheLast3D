@@ -1,3 +1,4 @@
+using Unity.Cinemachine;
 using UnityEngine;
 
 namespace UnityStandardAssets.Characters.FirstPerson
@@ -13,18 +14,21 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private CharacterAnimation characterAnimation;
         private Vector2 moveTouchStartPosition;
         private Vector2 input;
+        private Animator animator;
 
         // Touch detection
         private float halfScreenWidth;
         private int leftFingerId, rightFingerId;
 
         // Camera controller
+        private CinemachinePanTilt panTilt;
         private float cameraPitch;
         private Vector2 lookInput;
 
         private void Awake()
         {
             characterAnimation = GetComponent<CharacterAnimation>();
+            animator = GetComponent<Animator>();
         }
 
         private void Start()
@@ -38,8 +42,22 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
             characterController = GetComponent<CharacterController>();
 
+            // Get CinemachinePanTilt component
+            panTilt = cameraTransform.GetComponent<CinemachinePanTilt>();
+
             // Calculate the movement input dead zone
             moveInputDeadZone = Mathf.Pow(Screen.height / moveInputDeadZone, 2);
+            
+            if (animator != null && animator.isHuman)
+            {
+                Transform hips = animator.GetBoneTransform(HumanBodyBones.Hips);
+                if (hips != null)
+                {
+                    cameraTransform.transform.SetParent(hips);
+                    cameraTransform.transform.localPosition = new Vector3(0f, 1.3f, 0.1f);
+                    cameraTransform.transform.localRotation = Quaternion.identity;
+                }
+            }
         }
 
         private void Update()
@@ -142,10 +160,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private void Move()
         {
             // Do not move if the touch delta is shorter than the designated dead zone
-            if (input.sqrMagnitude <= moveInputDeadZone)
-            {
-                return;
-            }
+            if (input.sqrMagnitude <= moveInputDeadZone) return;
 
             // Multiply the normalized direction by the speed
             Vector2 movementDirection = input.normalized * walkSpeed * Time.deltaTime;
