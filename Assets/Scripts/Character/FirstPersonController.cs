@@ -1,4 +1,3 @@
-using Unity.Cinemachine;
 using UnityEngine;
 
 namespace UnityStandardAssets.Characters.FirstPerson
@@ -9,20 +8,31 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private float cameraSensitivity;
         [SerializeField] private float moveInputDeadZone;
         [SerializeField] private float runSpeed;
+        [SerializeField] private float smoothTime;
         [SerializeField] private float walkSpeed;
+        [SerializeField] private float idleBobAmount = 0.02f;
+        [SerializeField] private float idleBobSpeed = 1.5f;
+        [SerializeField] private float runBobAmount = 0.1f;
+        [SerializeField] private float runBobSpeed = 14f;
+        [SerializeField] private float walkBobAmount = 0.05f;
+        [SerializeField] private float walkBobSpeed = 8f;
+        private Vector2 currentRotation;
+        private Vector2 input;
+        private Vector2 moveTouchStartPosition;
+        private Vector2 rotationVelocity;
+        private Vector2 targetRotation;
+        private Animator animator;
+        private bool isMoving = false;
         private CharacterController characterController;
         private CharacterAnimation characterAnimation;
-        private Vector2 moveTouchStartPosition;
-        private Vector2 input;
-        private Animator animator;
+        private float bobTimer = 0f;
+        private Vector3 originalCameraLocalPos;
 
         // Touch detection
         private float halfScreenWidth;
         private int leftFingerId, rightFingerId;
 
         // Camera controller
-        private CinemachinePanTilt panTilt;
-        private float cameraPitch;
         private Vector2 lookInput;
 
         private void Awake()
@@ -42,12 +52,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
             characterController = GetComponent<CharacterController>();
 
-            // Get CinemachinePanTilt component
-            panTilt = cameraTransform.GetComponent<CinemachinePanTilt>();
-
             // Calculate the movement input dead zone
             moveInputDeadZone = Mathf.Pow(Screen.height / moveInputDeadZone, 2);
-            
+
+            originalCameraLocalPos = cameraTransform.localPosition;
+
             if (animator != null && animator.isHuman)
             {
                 Transform hips = animator.GetBoneTransform(HumanBodyBones.Hips);
@@ -76,6 +85,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 Move();
                 Debug.Log("Moving");
             }
+
+            HandleHeadBob();
         }
 
         private void GetTouchInput()
@@ -149,18 +160,27 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private void LookAround()
         {
-            // Vertial (pitch) rotation
-            cameraPitch = Mathf.Clamp(cameraPitch - lookInput.y, -60f, 90f);
-            cameraTransform.localRotation = Quaternion.Euler(cameraPitch, 0, 0);
+            targetRotation.x += lookInput.x * cameraSensitivity;
+            targetRotation.y -= lookInput.y * cameraSensitivity;
+            targetRotation.y = Mathf.Clamp(targetRotation.y, -30f, 90f);
 
-            // Hoizontal (yaw) rotation
-            transform.Rotate(transform.up, lookInput.x);
+            currentRotation.x = Mathf.SmoothDamp(currentRotation.x, targetRotation.x, ref rotationVelocity.x, smoothTime);
+            currentRotation.y = Mathf.SmoothDamp(currentRotation.y, targetRotation.y, ref rotationVelocity.y, smoothTime);
+
+            transform.rotation = Quaternion.Euler(0, currentRotation.x, 0);
+            cameraTransform.localRotation = Quaternion.Euler(currentRotation.y, 0, 0);
         }
 
         private void Move()
         {
             // Do not move if the touch delta is shorter than the designated dead zone
-            if (input.sqrMagnitude <= moveInputDeadZone) return;
+            if (input.sqrMagnitude <= moveInputDeadZone) 
+            {
+                isMoving = false;
+                return;
+            }
+
+            isMoving = true;
 
             // Multiply the normalized direction by the speed
             Vector2 movementDirection = input.normalized * walkSpeed * Time.deltaTime;
@@ -169,6 +189,31 @@ namespace UnityStandardAssets.Characters.FirstPerson
             characterController.Move(transform.right * movementDirection.x + transform.forward * movementDirection.y);
             characterAnimation.PlayWalkingAnimation();
             SoundManager.Instance.PlayFootStepSounds();
+        }
+
+        private void HandleHeadBob()
+        {
+            float bobAmount = 0f;
+            float bobSpeed = 0f;
+
+            if (isMoving)
+            {
+                bool isRunning = false;
+                bobAmount = isRunning ? runBobAmount : walkBobAmount;
+                bobSpeed = isRunning ? runBobSpeed : walkBobSpeed;
+            }
+            else
+            {
+                bobAmount = idleBobAmount;
+                bobSpeed = idleBobSpeed;
+            }
+
+            bobTimer += Time.deltaTime * bobSpeed;
+
+            float yOffset = Mathf.Sin(bobTimer) * bobAmount;
+            float xOffset = Mathf.Cos(bobTimer * 0.5f) * bobAmount * 0.5f;
+
+            cameraTransform.localPosition = originalCameraLocalPos + new Vector3(xOffset, yOffset, 0);
         }
     }
 }
