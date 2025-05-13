@@ -12,6 +12,8 @@ public class ChrisWalkerAI : MonoBehaviour
     private Transform player;
     private ChrisWalkerAnimation chrisWalkerAnimation;
     private AudioSource chrisWalkerAudioSource;
+    private float currentVelocity = 0f;
+
 
     private void Awake()
     {
@@ -22,6 +24,8 @@ public class ChrisWalkerAI : MonoBehaviour
 
     void Start()
     {
+        chrisWalkerAnimation.SetVelocity(0.5f);
+
         SoundManager.Instance.PlayChrisWalkerVoiceAndChainSound(chrisWalkerAudioSource);
         agent = GetComponent<NavMeshAgent>();
         GoToNextPatrolPoint();
@@ -30,11 +34,15 @@ public class ChrisWalkerAI : MonoBehaviour
     void Update()
     {
         float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
+        bool isRunning = distanceToPlayer < visionRange;
+        float targetVelocity = isRunning ? 1f : 0.5f;
 
         if (distanceToPlayer < visionRange)
         {
             SoundManager.Instance.PlayChrisWalkerChaseSound();
-            chrisWalkerAnimation.PlayRunAnimation();
+            // chrisWalkerAnimation.PlayRunAnimation();
+            currentVelocity = Mathf.Lerp(currentVelocity, targetVelocity, Time.deltaTime * 5f);
+            chrisWalkerAnimation.SetVelocity(currentVelocity);
             agent.speed = 15f;
 
             if (!agent.pathPending) agent.SetDestination(player.transform.position);
@@ -45,6 +53,8 @@ public class ChrisWalkerAI : MonoBehaviour
         }
         else if (!agent.pathPending && agent.remainingDistance < 0.5f)
         {
+            chrisWalkerAnimation.SetVelocity(targetVelocity);
+
             SoundManager.Instance.StopChrisWalkerChaseSound();
             agent.speed = 5f;
             chrisWalkerAnimation.StopRunAnimation();

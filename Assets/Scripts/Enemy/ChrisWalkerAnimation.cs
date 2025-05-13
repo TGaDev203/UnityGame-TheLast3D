@@ -2,20 +2,25 @@ using UnityEngine;
 
 public class ChrisWalkerAnimation : MonoBehaviour
 {
-    private Animator enemyAnimation;
+    private Animator chrisWalkerAnimation;
 
     private void Awake()
     {
-        enemyAnimation = GetComponent<Animator>();
+        chrisWalkerAnimation = GetComponent<Animator>();
     }
 
     public void PlayRunAnimation()
     {
-        enemyAnimation.SetBool("isRunning", true);
+        chrisWalkerAnimation.SetBool("isRunning", true);
     }
 
     public void StopRunAnimation()
     {
-        enemyAnimation.SetBool("isRunning", false);
+        chrisWalkerAnimation.SetBool("isRunning", false);
+    }
+
+    public void SetVelocity(float velocity)
+    {
+        chrisWalkerAnimation.SetFloat("Velocity", velocity);
     }
 }
