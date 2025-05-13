@@ -8,6 +8,8 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private AudioSource backgroundAudioSource;
     [SerializeField] private AudioSource soundEffectAudioSource;
     [SerializeField] private AudioClip[] footStepSounds;
+    [SerializeField] private AudioClip chrisWalkerVoiceAndChainSound;
+    [SerializeField] private AudioClip chrisWalkerChaseSound;
     [SerializeField] private AudioClip gamePlaySound;
     [SerializeField] private AudioClip mainMenuSound;
     [SerializeField] private float footstepInterval;
@@ -25,7 +27,7 @@ public class SoundManager : MonoBehaviour
 
     private void Start()
     {
-        PlayLoopSound();
+        PlayBackgroundSound();
     }
 
     private void Update()
@@ -36,13 +38,44 @@ public class SoundManager : MonoBehaviour
         }
     }
 
-    public void PlayFootStepSounds()
+    public void PlayFootStepSounds(bool isRunning)
     {
+        float interval = isRunning ? footstepInterval * 0.6f : footstepInterval;
+
         if (Time.time >= nextFootstepTime && footStepSounds.Length > 0)
         {
             int index = Random.Range(0, footStepSounds.Length);
             soundEffectAudioSource.PlayOneShot(footStepSounds[index]);
-            nextFootstepTime = Time.time + footstepInterval;
+            nextFootstepTime = Time.time + interval;
+        }
+    }
+
+    public void PlayChrisWalkerVoiceAndChainSound(AudioSource chrisWalkerAudioSource)
+    {
+        if (chrisWalkerVoiceAndChainSound != null)
+        {
+            chrisWalkerAudioSource.loop = true;
+            chrisWalkerAudioSource.clip = chrisWalkerVoiceAndChainSound;
+            chrisWalkerAudioSource.Play();
+        }
+    }
+
+    public void PlayChrisWalkerChaseSound()
+    {
+        if (soundEffectAudioSource.clip == chrisWalkerChaseSound && soundEffectAudioSource.isPlaying) return;
+
+        soundEffectAudioSource.loop = true;
+        soundEffectAudioSource.clip = chrisWalkerChaseSound;
+        soundEffectAudioSource.Play();
+    }
+    public void StopChrisWalkerChaseSound()
+    {
+        if (soundEffectAudioSource.clip == chrisWalkerChaseSound && soundEffectAudioSource.isPlaying)
+        {
+
+            soundEffectAudioSource.loop = false;
+            soundEffectAudioSource.clip = chrisWalkerChaseSound;
+            soundEffectAudioSource.Stop();
         }
     }
 
@@ -55,7 +88,7 @@ public class SoundManager : MonoBehaviour
         }
     }
 
-    public void PlayLoopSound()
+    public void PlayBackgroundSound()
     {
         if (backgroundAudioSource == null) return;
 

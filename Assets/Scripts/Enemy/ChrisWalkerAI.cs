@@ -10,17 +10,19 @@ public class ChrisWalkerAI : MonoBehaviour
     public float attackRange = 2f;
     private NavMeshAgent agent;
     private Transform player;
-    private bool isChasing = false;
     private ChrisWalkerAnimation chrisWalkerAnimation;
+    private AudioSource chrisWalkerAudioSource;
 
     private void Awake()
     {
         chrisWalkerAnimation = GetComponent<ChrisWalkerAnimation>();
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
+        chrisWalkerAudioSource = GetComponent<AudioSource>();
     }
 
     void Start()
     {
+        SoundManager.Instance.PlayChrisWalkerVoiceAndChainSound(chrisWalkerAudioSource);
         agent = GetComponent<NavMeshAgent>();
         GoToNextPatrolPoint();
     }
@@ -31,18 +33,21 @@ public class ChrisWalkerAI : MonoBehaviour
 
         if (distanceToPlayer < visionRange)
         {
+            SoundManager.Instance.PlayChrisWalkerChaseSound();
             chrisWalkerAnimation.PlayRunAnimation();
-            isChasing = true;
-            agent.SetDestination(player.transform.position);
+            agent.speed = 15f;
+
+            if (!agent.pathPending) agent.SetDestination(player.transform.position);
         }
         else if (distanceToPlayer < attackRange)
         {
-            isChasing = false;
-            chrisWalkerAnimation.StopRunAnimation();
             AttackPlayer();
         }
         else if (!agent.pathPending && agent.remainingDistance < 0.5f)
         {
+            SoundManager.Instance.StopChrisWalkerChaseSound();
+            agent.speed = 5f;
+            chrisWalkerAnimation.StopRunAnimation();
             GoToNextPatrolPoint();
         }
     }
@@ -53,18 +58,6 @@ public class ChrisWalkerAI : MonoBehaviour
 
         agent.destination = patrolPoints[currentPointIndex].position;
         currentPointIndex = (currentPointIndex + 1) % patrolPoints.Length;
-    }
-
-    private bool CanSeePlayer()
-    {
-        chrisWalkerAnimation.PlayRunAnimation();
-        RaycastHit hit;
-        Vector3 direction = player.transform.position - transform.position;
-        if (Physics.Raycast(transform.position, direction, out hit, visionRange))
-        {
-            return hit.collider.CompareTag("Player");
-        }
-        return false;
     }
 
     private void AttackPlayer()

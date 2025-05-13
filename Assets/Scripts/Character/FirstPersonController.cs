@@ -16,6 +16,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private float runBobSpeed = 14f;
         [SerializeField] private float walkBobAmount = 0.05f;
         [SerializeField] private float walkBobSpeed = 8f;
+        private float currentVelocity = 0f;
+        [SerializeField] private float animationSmoothTime = 5f;
         private Vector2 currentRotation;
         private Vector2 input;
         private Vector2 moveTouchStartPosition;
@@ -121,8 +123,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
                             leftFingerId = -1;
                             Debug.Log("Stopped tracking left finger");
                             input = Vector2.zero;
-                            characterAnimation.StopWalkingAmimation();
-
+                            characterAnimation.SetVelocity(0f);
                         }
                         else if (touch.fingerId == rightFingerId)
                         {
@@ -162,7 +163,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         {
             targetRotation.x += lookInput.x * cameraSensitivity;
             targetRotation.y -= lookInput.y * cameraSensitivity;
-            targetRotation.y = Mathf.Clamp(targetRotation.y, -30f, 90f);
+            targetRotation.y = Mathf.Clamp(targetRotation.y, -90f, 90f);
 
             currentRotation.x = Mathf.SmoothDamp(currentRotation.x, targetRotation.x, ref rotationVelocity.x, smoothTime);
             currentRotation.y = Mathf.SmoothDamp(currentRotation.y, targetRotation.y, ref rotationVelocity.y, smoothTime);
@@ -173,22 +174,30 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private void Move()
         {
-            // Do not move if the touch delta is shorter than the designated dead zone
-            if (input.sqrMagnitude <= moveInputDeadZone) 
+            if (input.sqrMagnitude <= moveInputDeadZone)
             {
                 isMoving = false;
+                currentVelocity = Mathf.Lerp(currentVelocity, 0f, Time.deltaTime * animationSmoothTime);
+                characterAnimation.SetVelocity(currentVelocity);
                 return;
             }
 
             isMoving = true;
 
-            // Multiply the normalized direction by the speed
-            Vector2 movementDirection = input.normalized * walkSpeed * Time.deltaTime;
+            float inputMagnitude = input.magnitude;
+            bool isRunning = inputMagnitude > 400f;
 
-            // Move relatively to the local transform's direction
+            float targetVelocity = isRunning ? 1f : 0.5f;
+
+            currentVelocity = Mathf.Lerp(currentVelocity, targetVelocity, Time.deltaTime * animationSmoothTime);
+            characterAnimation.SetVelocity(currentVelocity);
+
+            float moveSpeed = isRunning ? runSpeed : walkSpeed;
+
+            Vector2 movementDirection = input.normalized * moveSpeed * Time.deltaTime;
             characterController.Move(transform.right * movementDirection.x + transform.forward * movementDirection.y);
-            characterAnimation.PlayWalkingAnimation();
-            SoundManager.Instance.PlayFootStepSounds();
+
+            SoundManager.Instance.PlayFootStepSounds(isRunning);
         }
 
         private void HandleHeadBob()

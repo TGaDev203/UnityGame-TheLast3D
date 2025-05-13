@@ -2,20 +2,15 @@ using UnityEngine;
 
 public class CharacterAnimation : MonoBehaviour
 {
-    private Animator characterAnimator;
+    private Animator characterAnimation;
 
     private void Awake()
     {
-        characterAnimator = GetComponent<Animator>();
+        characterAnimation = GetComponent<Animator>();
     }
 
-    public void PlayWalkingAnimation()
+    public void SetVelocity(float velocity)
     {
-        characterAnimator.SetBool("isWalking", true);
-    }
-
-    public void StopWalkingAmimation()
-    {
-        characterAnimator.SetBool("isWalking", false);
+        characterAnimation.SetFloat("Velocity", velocity);
     }
 }
