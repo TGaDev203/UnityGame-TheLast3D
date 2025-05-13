@@ -7586,7 +7586,7 @@ MonoBehaviour:
   chrisWalkerChaseSound: {fileID: 8300000, guid: 21e05219271dc2140b327060ad336b3f, type: 3}
   gamePlaySound: {fileID: 8300000, guid: bbb19e2c8e7feab41850c50f54799a56, type: 3}
   mainMenuSound: {fileID: 8300000, guid: b73b693a82aac37418e855d1053b7c50, type: 3}
-  footstepInterval: 0.5
+  footstepInterval: 0.6
 --- !u!1 &626912795
 GameObject:
   m_ObjectHideFlags: 0

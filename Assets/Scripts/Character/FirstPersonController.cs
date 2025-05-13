@@ -123,7 +123,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
                             leftFingerId = -1;
                             Debug.Log("Stopped tracking left finger");
                             input = Vector2.zero;
-                            characterAnimation.SetVelocity(0f);
+                            // characterAnimation.SetVelocity(0f);
+                            characterAnimation.SetDirection(Vector2.zero);
+                            characterAnimation.StopRunAnimation();
                         }
                         else if (touch.fingerId == rightFingerId)
                         {
@@ -177,8 +179,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
             if (input.sqrMagnitude <= moveInputDeadZone)
             {
                 isMoving = false;
-                currentVelocity = Mathf.Lerp(currentVelocity, 0f, Time.deltaTime * animationSmoothTime);
-                characterAnimation.SetVelocity(currentVelocity);
+                // currentVelocity = Mathf.Lerp(currentVelocity, 0f, Time.deltaTime * animationSmoothTime);
+                // characterAnimation.SetVelocity(currentVelocity);
+                characterAnimation.SetDirection(Vector2.zero);
                 return;
             }
 
@@ -187,15 +190,22 @@ namespace UnityStandardAssets.Characters.FirstPerson
             float inputMagnitude = input.magnitude;
             bool isRunning = inputMagnitude > 400f;
 
-            float targetVelocity = isRunning ? 1f : 0.5f;
+            // float targetVelocity = isRunning ? 1f : 0.5f;
 
-            currentVelocity = Mathf.Lerp(currentVelocity, targetVelocity, Time.deltaTime * animationSmoothTime);
-            characterAnimation.SetVelocity(currentVelocity);
+            // currentVelocity = Mathf.Lerp(currentVelocity, targetVelocity, Time.deltaTime * animationSmoothTime);
+            // characterAnimation.SetVelocity(currentVelocity);
 
             float moveSpeed = isRunning ? runSpeed : walkSpeed;
 
             Vector2 movementDirection = input.normalized * moveSpeed * Time.deltaTime;
             characterController.Move(transform.right * movementDirection.x + transform.forward * movementDirection.y);
+            if (isRunning)
+            {
+                characterAnimation.PlayRunAnimation();
+            }
+
+            Vector2 movementInput = input.normalized * (isRunning ? 1f : 0.5f);
+            characterAnimation.SetDirection(movementInput);
 
             SoundManager.Instance.PlayFootStepSounds(isRunning);
         }
