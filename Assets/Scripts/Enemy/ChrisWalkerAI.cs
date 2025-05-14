@@ -13,6 +13,9 @@ public class ChrisWalkerAI : MonoBehaviour
     private NavMeshAgent agent;
     public Transform[] patrolPoints;
     private Transform player;
+    // float viewDistance = 10f;
+    float viewAngle = 120f;
+    float eyeHeight = 1.7f;
 
     private void Awake()
     {
@@ -36,7 +39,7 @@ public class ChrisWalkerAI : MonoBehaviour
         bool isRunning = distanceToPlayer < visionRange;
         float targetVelocity = isRunning ? 1f : 0.5f;
 
-        if (distanceToPlayer < visionRange)
+        if (distanceToPlayer < visionRange && CanSeePlayer(player))
         {
             SoundManager.Instance.PlayChrisWalkerChaseSound();
             currentVelocity = Mathf.Lerp(currentVelocity, targetVelocity, Time.deltaTime * 5f);
@@ -55,9 +58,30 @@ public class ChrisWalkerAI : MonoBehaviour
 
             SoundManager.Instance.StopChrisWalkerChaseSound();
             agent.speed = 5f;
-            chrisWalkerAnimation.StopRunAnimation();
+            chrisWalkerAnimation.SetVelocity(0.5f);
             GoToNextPatrolPoint();
         }
+    }
+
+    private bool CanSeePlayer(Transform player)
+    {
+        Vector3 directionToPlayer = player.position - transform.position;
+        float distanceToPlayer = directionToPlayer.magnitude;
+
+        if (distanceToPlayer > visionRange) return false;
+
+        float angleToPlayer = Vector3.Angle(transform.forward, directionToPlayer);
+        if (angleToPlayer > viewAngle / 2f) return false;
+
+        Ray ray = new Ray(transform.position + Vector3.up * eyeHeight, directionToPlayer);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, distanceToPlayer))
+        {
+            if (!hit.transform.CompareTag("Player")) return false;
+        }
+
+        return true;
     }
 
     private void GoToNextPatrolPoint()
