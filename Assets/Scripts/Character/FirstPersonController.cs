@@ -4,20 +4,21 @@ namespace UnityStandardAssets.Characters.FirstPerson
 {
     public class FirstPersonController : MonoBehaviour
     {
-        [SerializeField] private Transform cameraTransform;
+        [SerializeField] private float animationSmoothTime;
         [SerializeField] private float cameraSensitivity;
+        [SerializeField] private float idleBobAmount;
+        [SerializeField] private float idleBobSpeed;
         [SerializeField] private float moveInputDeadZone;
+        [SerializeField] private float runBobAmount;
+        [SerializeField] private float runBobSpeed;
         [SerializeField] private float runSpeed;
-        [SerializeField] private float smoothTime;
+        [SerializeField] private float walkBobAmount;
+        [SerializeField] private float walkBobSpeed;
         [SerializeField] private float walkSpeed;
-        [SerializeField] private float idleBobAmount = 0.02f;
-        [SerializeField] private float idleBobSpeed = 1.5f;
-        [SerializeField] private float runBobAmount = 0.1f;
-        [SerializeField] private float runBobSpeed = 14f;
-        [SerializeField] private float walkBobAmount = 0.05f;
-        [SerializeField] private float walkBobSpeed = 8f;
-        private float currentVelocity = 0f;
-        [SerializeField] private float animationSmoothTime = 5f;
+        [SerializeField] private float smoothTime;
+        [SerializeField] private Transform cameraTransform;
+        private CharacterController characterController;
+        private CharacterAnimation characterAnimation;
         private Vector2 currentRotation;
         private Vector2 input;
         private Vector2 moveTouchStartPosition;
@@ -25,8 +26,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private Vector2 targetRotation;
         private Animator animator;
         private bool isMoving = false;
-        private CharacterController characterController;
-        private CharacterAnimation characterAnimation;
         private float bobTimer = 0f;
         private Vector3 originalCameraLocalPos;
 
@@ -116,6 +115,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
                         break;
 
                     case TouchPhase.Ended:
+
                     case TouchPhase.Canceled:
                         if (touch.fingerId == leftFingerId)
                         {
@@ -123,7 +123,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
                             leftFingerId = -1;
                             Debug.Log("Stopped tracking left finger");
                             input = Vector2.zero;
-                            // characterAnimation.SetVelocity(0f);
                             characterAnimation.SetDirection(Vector2.zero);
                             characterAnimation.StopRunAnimation();
                         }
@@ -179,8 +178,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
             if (input.sqrMagnitude <= moveInputDeadZone)
             {
                 isMoving = false;
-                // currentVelocity = Mathf.Lerp(currentVelocity, 0f, Time.deltaTime * animationSmoothTime);
-                // characterAnimation.SetVelocity(currentVelocity);
                 characterAnimation.SetDirection(Vector2.zero);
                 return;
             }
@@ -190,18 +187,18 @@ namespace UnityStandardAssets.Characters.FirstPerson
             float inputMagnitude = input.magnitude;
             bool isRunning = inputMagnitude > 400f;
 
-            // float targetVelocity = isRunning ? 1f : 0.5f;
-
-            // currentVelocity = Mathf.Lerp(currentVelocity, targetVelocity, Time.deltaTime * animationSmoothTime);
-            // characterAnimation.SetVelocity(currentVelocity);
-
             float moveSpeed = isRunning ? runSpeed : walkSpeed;
 
             Vector2 movementDirection = input.normalized * moveSpeed * Time.deltaTime;
             characterController.Move(transform.right * movementDirection.x + transform.forward * movementDirection.y);
+
             if (isRunning)
             {
                 characterAnimation.PlayRunAnimation();
+            }
+            else
+            {
+                characterAnimation.StopRunAnimation();
             }
 
             Vector2 movementInput = input.normalized * (isRunning ? 1f : 0.5f);

@@ -9,11 +9,6 @@ public class CharacterAnimation : MonoBehaviour
         characterAnimation = GetComponent<Animator>();
     }
 
-    // public void SetVelocity(float velocity)
-    // {
-    //     characterAnimation.SetFloat("Velocity", velocity);
-    // }
-
     public void SetDirection(Vector2 input)
     {
         Vector2 direction = input.normalized;

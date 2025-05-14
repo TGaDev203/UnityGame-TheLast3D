@@ -7,9 +7,9 @@ public class SoundManager : MonoBehaviour
 
     [SerializeField] private AudioSource backgroundAudioSource;
     [SerializeField] private AudioSource soundEffectAudioSource;
-    [SerializeField] private AudioClip[] footStepSounds;
     [SerializeField] private AudioClip chrisWalkerVoiceAndChainSound;
     [SerializeField] private AudioClip chrisWalkerChaseSound;
+    [SerializeField] private AudioClip[] footStepSounds;
     [SerializeField] private AudioClip gamePlaySound;
     [SerializeField] private AudioClip mainMenuSound;
     [SerializeField] private float footstepInterval;

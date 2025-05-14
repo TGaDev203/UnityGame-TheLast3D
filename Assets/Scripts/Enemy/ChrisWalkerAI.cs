@@ -3,17 +3,16 @@ using UnityEngine.AI;
 
 public class ChrisWalkerAI : MonoBehaviour
 {
-    public Transform[] patrolPoints;
-    private int currentPointIndex = 0;
-    public float visionRange = 10f;
-    public float hearingRange = 8f;
-    public float attackRange = 2f;
-    private NavMeshAgent agent;
-    private Transform player;
-    private ChrisWalkerAnimation chrisWalkerAnimation;
-    private AudioSource chrisWalkerAudioSource;
+    public float attackRange;
     private float currentVelocity = 0f;
-
+    public float hearingRange;
+    public float visionRange;
+    private AudioSource chrisWalkerAudioSource;
+    private int currentPointIndex = 0;
+    private ChrisWalkerAnimation chrisWalkerAnimation;
+    private NavMeshAgent agent;
+    public Transform[] patrolPoints;
+    private Transform player;
 
     private void Awake()
     {
@@ -40,7 +39,6 @@ public class ChrisWalkerAI : MonoBehaviour
         if (distanceToPlayer < visionRange)
         {
             SoundManager.Instance.PlayChrisWalkerChaseSound();
-            // chrisWalkerAnimation.PlayRunAnimation();
             currentVelocity = Mathf.Lerp(currentVelocity, targetVelocity, Time.deltaTime * 5f);
             chrisWalkerAnimation.SetVelocity(currentVelocity);
             agent.speed = 15f;
