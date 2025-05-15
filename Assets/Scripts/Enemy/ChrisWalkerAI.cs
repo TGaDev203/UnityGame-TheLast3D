@@ -24,7 +24,7 @@ public class ChrisWalkerAI : MonoBehaviour
         chrisWalkerAudioSource = GetComponent<AudioSource>();
     }
 
-    void Start()
+    private void Start()
     {
         chrisWalkerAnimation.SetVelocity(0.5f);
 
@@ -33,7 +33,7 @@ public class ChrisWalkerAI : MonoBehaviour
         GoToNextPatrolPoint();
     }
 
-    void Update()
+    private void Update()
     {
         float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
         bool isRunning = distanceToPlayer < visionRange;
@@ -67,22 +67,32 @@ public class ChrisWalkerAI : MonoBehaviour
     {
         Vector3 directionToPlayer = player.position - transform.position;
         float distanceToPlayer = directionToPlayer.magnitude;
-
-        if (distanceToPlayer > visionRange) return false;
+        float shortRange = visionRange * 0.4f;
 
         float angleToPlayer = Vector3.Angle(transform.forward, directionToPlayer);
-        if (angleToPlayer > viewAngle / 2f) return false;
-
-        Ray ray = new Ray(transform.position + Vector3.up * eyeHeight, directionToPlayer);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit, distanceToPlayer))
+        if (distanceToPlayer <= visionRange && angleToPlayer <= viewAngle / 2f)
         {
-            if (!hit.transform.CompareTag("Player")) return false;
+            Ray longRay = new Ray(transform.position + Vector3.up * eyeHeight, directionToPlayer);
+            if (Physics.Raycast(longRay, out RaycastHit hit1, distanceToPlayer))
+            {
+                if (hit1.transform.CompareTag("Player"))
+                    return true;
+            }
         }
 
-        return true;
+        if (distanceToPlayer <= shortRange)
+        {
+            Ray shortRay = new Ray(transform.position + Vector3.up * eyeHeight, directionToPlayer);
+            if (Physics.Raycast(shortRay, out RaycastHit hit2, distanceToPlayer))
+            {
+                if (hit2.transform.CompareTag("Player"))
+                    return true;
+            }
+        }
+
+        return false;
     }
+
 
     private void GoToNextPatrolPoint()
     {
