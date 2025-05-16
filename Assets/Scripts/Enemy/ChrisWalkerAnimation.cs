@@ -18,4 +18,14 @@ public class ChrisWalkerAnimation : MonoBehaviour
     {
         chrisWalkerAnimation.SetFloat("Velocity", velocity);
     }
+
+    public void PlayLookAroundAnimation()
+    {
+        chrisWalkerAnimation.SetBool("isLooking", true);
+    }
+
+    public void StopLookAroundAnimation()
+    {
+        chrisWalkerAnimation.SetBool("isLooking", false);
+    }
 }

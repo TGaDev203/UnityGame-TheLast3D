@@ -1,21 +1,24 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class ChrisWalkerAI : MonoBehaviour
 {
-    public float attackRange;
+    [SerializeField] private float attackRange;
+    [SerializeField] private float eyeHeight;
+    [SerializeField] private float hearingRange;
+    [SerializeField] private float visionRange;
+    [SerializeField] private float viewAngle;
+    [SerializeField] private Transform[] patrolPoints;
     private float currentVelocity = 0f;
-    public float hearingRange;
-    public float visionRange;
+    private float nextLookTime = 0f;
+    private float lookTimer = 0f;
     private AudioSource chrisWalkerAudioSource;
-    private int currentPointIndex = 0;
+    private bool isLookingAround = false;
     private ChrisWalkerAnimation chrisWalkerAnimation;
+    private int currentPointIndex = 0;
     private NavMeshAgent agent;
-    public Transform[] patrolPoints;
     private Transform player;
-    // float viewDistance = 10f;
-    float viewAngle = 120f;
-    float eyeHeight = 1.7f;
 
     private void Awake()
     {
@@ -26,6 +29,7 @@ public class ChrisWalkerAI : MonoBehaviour
 
     private void Start()
     {
+        nextLookTime = Random.Range(5f, 10f);
         chrisWalkerAnimation.SetVelocity(0.5f);
 
         SoundManager.Instance.PlayChrisWalkerVoiceAndChainSound(chrisWalkerAudioSource);
@@ -61,6 +65,33 @@ public class ChrisWalkerAI : MonoBehaviour
             chrisWalkerAnimation.SetVelocity(0.5f);
             GoToNextPatrolPoint();
         }
+        else if (agent.velocity.magnitude > 0.1f && !isLookingAround)
+        {
+            lookTimer += Time.deltaTime;
+            if (lookTimer >= nextLookTime)
+            {
+                StartCoroutine(PerformLookAround());
+            }
+        }
+
+    }
+
+    private IEnumerator PerformLookAround()
+    {
+        isLookingAround = true;
+        lookTimer = 5f;
+        nextLookTime = Random.Range(10f, 20f);
+
+        agent.isStopped = true;
+        chrisWalkerAnimation.SetVelocity(0f);
+        chrisWalkerAnimation.PlayLookAroundAnimation();
+
+        yield return new WaitForSeconds(Random.Range(2f, 4f));
+
+        agent.isStopped = false;
+        chrisWalkerAnimation.StopLookAroundAnimation();
+        chrisWalkerAnimation.SetVelocity(0.5f);
+        isLookingAround = false;
     }
 
     private bool CanSeePlayer(Transform player)
@@ -92,7 +123,6 @@ public class ChrisWalkerAI : MonoBehaviour
 
         return false;
     }
-
 
     private void GoToNextPatrolPoint()
     {

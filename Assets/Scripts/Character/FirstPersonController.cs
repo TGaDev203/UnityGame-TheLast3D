@@ -76,17 +76,17 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 }
             }
 
-// if (transform.parent != null)
-// {
-//     foreach (Transform child in transform.parent)
-//     {
-//         if (child.CompareTag("DoorWay"))
-//         {
-//             doorLeaf = child;
-//             // break;
-//         }
-//     }
-// }
+            // if (transform.parent != null)
+            // {
+            //     foreach (Transform child in transform.parent)
+            //     {
+            //         if (child.CompareTag("DoorWay"))
+            //         {
+            //             doorLeaf = child;
+            //             // break;
+            //         }
+            //     }
+            // }
 
         }
 
@@ -252,93 +252,93 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
             cameraTransform.localPosition = originalCameraLocalPos + new Vector3(xOffset, yOffset, 0);
         }
-private bool isOpen = false;
+        private bool isOpen = false;
 
-// public void OpenDoor()
-// {
-//     if (isPlayerNearby)
-//     {
-//         Debug.Log("Hihi");
-//         isOpen = !isOpen;
-//         float angle = isOpen ? -90f : 0f;
-//         doorLeaf.rotation = Quaternion.Euler(0f, angle, 0f);
-//     }
-// }
+        // public void OpenDoor()
+        // {
+        //     if (isPlayerNearby)
+        //     {
+        //         Debug.Log("Hihi");
+        //         isOpen = !isOpen;
+        //         float angle = isOpen ? -90f : 0f;
+        //         doorLeaf.rotation = Quaternion.Euler(0f, angle, 0f);
+        //     }
+        // }
 
-public void OpenDoor()
-{
-    if (isPlayerNearby && detectedDoorLeaf != null)
-    {
-        Debug.Log("Trying to open door...");
-        isOpen = !isOpen;
-        float angle = isOpen ? -90f : 0f;
-        detectedDoorLeaf.rotation = Quaternion.Euler(0f, angle, 0f);
-    }
-}
-
-
-// private void OnTriggerEnter(Collider other)
-// {
-//     if (other.CompareTag("DoorWay"))
-//     {
-//         Debug.Log("Player near DoorWay");
-//         isPlayerNearby = true;
-
-//         // Find child with tag "DoorLeaf"
-//         doorLeaf = null;
-//         foreach (Transform child in other.transform)
-//         {
-//             if (child.CompareTag("DoorLeaf"))
-//             {
-//                 doorLeaf = child;
-//                 Debug.Log("DoorLeaf found: " + doorLeaf.name);
-//                 break;
-//             }
-//         }
-//     }
-// }
-private void CheckForDoor()
-{
-    Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
-    RaycastHit hit;
-
-    if (Physics.Raycast(ray, out hit, doorCheckDistance))
-    {
-        if (hit.collider.CompareTag("DoorWay"))
+        public void OpenDoor()
         {
-            Debug.Log("Looking at DoorWay");
-
-            // Tìm DoorLeaf (nếu chưa có)
-            detectedDoorLeaf = null;
-            foreach (Transform child in hit.collider.transform)
+            if (isPlayerNearby && detectedDoorLeaf != null)
             {
-                if (child.CompareTag("DoorLeaf"))
+                Debug.Log("Trying to open door...");
+                isOpen = !isOpen;
+                float angle = isOpen ? -90f : 0f;
+                detectedDoorLeaf.rotation = Quaternion.Euler(0f, angle, 0f);
+            }
+        }
+
+
+        // private void OnTriggerEnter(Collider other)
+        // {
+        //     if (other.CompareTag("DoorWay"))
+        //     {
+        //         Debug.Log("Player near DoorWay");
+        //         isPlayerNearby = true;
+
+        //         // Find child with tag "DoorLeaf"
+        //         doorLeaf = null;
+        //         foreach (Transform child in other.transform)
+        //         {
+        //             if (child.CompareTag("DoorLeaf"))
+        //             {
+        //                 doorLeaf = child;
+        //                 Debug.Log("DoorLeaf found: " + doorLeaf.name);
+        //                 break;
+        //             }
+        //         }
+        //     }
+        // }
+        private void CheckForDoor()
+        {
+            Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit, doorCheckDistance))
+            {
+                if (hit.collider.CompareTag("DoorWay"))
                 {
-                    detectedDoorLeaf = child;
-                    openDoorButton.gameObject.SetActive(true);
-                    break;
+                    Debug.Log("Looking at DoorWay");
+
+                    // Tìm DoorLeaf (nếu chưa có)
+                    detectedDoorLeaf = null;
+                    foreach (Transform child in hit.collider.transform)
+                    {
+                        if (child.CompareTag("DoorLeaf"))
+                        {
+                            detectedDoorLeaf = child;
+                            openDoorButton.gameObject.SetActive(true);
+                            break;
+                        }
+                    }
+
+                    isPlayerNearby = true;
+                    return;
                 }
             }
 
-            isPlayerNearby = true;
-            return;
+            // Nếu không trúng cửa nào
+            isPlayerNearby = false;
+            detectedDoorLeaf = null;
+            openDoorButton.gameObject.SetActive(false);
+
         }
-    }
 
-    // Nếu không trúng cửa nào
-    isPlayerNearby = false;
-    detectedDoorLeaf = null;
-                        openDoorButton.gameObject.SetActive(false);
-
-}
-
-//         private void OnTriggerExit(Collider other)
-//         {
-//             if (other.CompareTag("DoorWay"))
-//             {
-//                 Debug.Log("Oke");
-//                 isPlayerNearby = false;
-//             }
-//         }
+        //         private void OnTriggerExit(Collider other)
+        //         {
+        //             if (other.CompareTag("DoorWay"))
+        //             {
+        //                 Debug.Log("Oke");
+        //                 isPlayerNearby = false;
+        //             }
+        //         }
     }
 }
