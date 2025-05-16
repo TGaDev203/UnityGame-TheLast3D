@@ -1,3 +1,5 @@
+using System.Collections;
+using UnityEditor.ShaderGraph.Serialization;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -5,8 +7,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
 {
     public class FirstPersonController : MonoBehaviour
     {
-        [SerializeField] private float animationSmoothTime;
-        [SerializeField] private float cameraSensitivity;
+        [SerializeField] private Button lockButton_Closed;
+        [SerializeField] private Button lockButton_Opened;
         [SerializeField] private float idleBobAmount;
         [SerializeField] private float idleBobSpeed;
         [SerializeField] private float moveInputDeadZone;
@@ -16,8 +18,14 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private float walkBobAmount;
         [SerializeField] private float walkBobSpeed;
         [SerializeField] private float walkSpeed;
+        [SerializeField] private float animationSmoothTime;
+        [SerializeField] private float cameraSensitivity;
+        [SerializeField] private float doorCheckDistance;
         [SerializeField] private float smoothTime;
         [SerializeField] private Transform cameraTransform;
+        private bool isPlayerNearby = false;
+        private bool isMoving = false;
+        private bool isOpen = false;
         private CharacterController characterController;
         private CharacterAnimation characterAnimation;
         private Vector2 currentRotation;
@@ -26,15 +34,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private Vector2 rotationVelocity;
         private Vector2 targetRotation;
         private Animator animator;
-        private bool isMoving = false;
         private float bobTimer = 0f;
         private Vector3 originalCameraLocalPos;
-        private Transform doorLeaf;
-        private bool isPlayerNearby = false;
-        public Button openDoorButton;
-        public float doorCheckDistance = 5f;
         private Transform detectedDoorLeaf = null;
-
 
         // Touch detection
         private float halfScreenWidth;
@@ -75,19 +77,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
                     cameraTransform.transform.localRotation = Quaternion.identity;
                 }
             }
-
-            // if (transform.parent != null)
-            // {
-            //     foreach (Transform child in transform.parent)
-            //     {
-            //         if (child.CompareTag("DoorWay"))
-            //         {
-            //             doorLeaf = child;
-            //             // break;
-            //         }
-            //     }
-            // }
-
         }
 
         private void Update()
@@ -252,51 +241,37 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
             cameraTransform.localPosition = originalCameraLocalPos + new Vector3(xOffset, yOffset, 0);
         }
-        private bool isOpen = false;
 
-        // public void OpenDoor()
-        // {
-        //     if (isPlayerNearby)
-        //     {
-        //         Debug.Log("Hihi");
-        //         isOpen = !isOpen;
-        //         float angle = isOpen ? -90f : 0f;
-        //         doorLeaf.rotation = Quaternion.Euler(0f, angle, 0f);
-        //     }
-        // }
+public void OpenDoor()
+{
+    if (isPlayerNearby && detectedDoorLeaf != null)
+    {
+        Debug.Log("Trying to open door...");
+        isOpen = !isOpen;
 
-        public void OpenDoor()
-        {
-            if (isPlayerNearby && detectedDoorLeaf != null)
-            {
-                Debug.Log("Trying to open door...");
-                isOpen = !isOpen;
-                float angle = isOpen ? -90f : 0f;
-                detectedDoorLeaf.rotation = Quaternion.Euler(0f, angle, 0f);
-            }
-        }
+        float targetAngle = isOpen ? -90f : 0f;
+        StartCoroutine(RotateDoor(targetAngle, 0.5f));
+    }
+}
+
+private IEnumerator RotateDoor(float targetAngle, float duration)
+{
+    Quaternion startRotation = detectedDoorLeaf.rotation;
+    Quaternion endRotation = Quaternion.Euler(0f, targetAngle, 0f);
+    float elapsed = 0f;
+
+    while (elapsed < duration)
+    {
+        elapsed += Time.deltaTime;
+        float t = Mathf.Clamp01(elapsed / duration);
+        detectedDoorLeaf.rotation = Quaternion.Lerp(startRotation, endRotation, t);
+        yield return null;
+    }
+
+    detectedDoorLeaf.rotation = endRotation;
+}
 
 
-        // private void OnTriggerEnter(Collider other)
-        // {
-        //     if (other.CompareTag("DoorWay"))
-        //     {
-        //         Debug.Log("Player near DoorWay");
-        //         isPlayerNearby = true;
-
-        //         // Find child with tag "DoorLeaf"
-        //         doorLeaf = null;
-        //         foreach (Transform child in other.transform)
-        //         {
-        //             if (child.CompareTag("DoorLeaf"))
-        //             {
-        //                 doorLeaf = child;
-        //                 Debug.Log("DoorLeaf found: " + doorLeaf.name);
-        //                 break;
-        //             }
-        //         }
-        //     }
-        // }
         private void CheckForDoor()
         {
             Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
@@ -308,14 +283,13 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 {
                     Debug.Log("Looking at DoorWay");
 
-                    // Tìm DoorLeaf (nếu chưa có)
                     detectedDoorLeaf = null;
                     foreach (Transform child in hit.collider.transform)
                     {
                         if (child.CompareTag("DoorLeaf"))
                         {
                             detectedDoorLeaf = child;
-                            openDoorButton.gameObject.SetActive(true);
+                            SwitchPadlock();
                             break;
                         }
                     }
@@ -325,20 +299,25 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 }
             }
 
-            // Nếu không trúng cửa nào
             isPlayerNearby = false;
             detectedDoorLeaf = null;
-            openDoorButton.gameObject.SetActive(false);
-
+            lockButton_Closed.gameObject.SetActive(false);
+            lockButton_Opened.gameObject.SetActive(false);
         }
 
-        //         private void OnTriggerExit(Collider other)
-        //         {
-        //             if (other.CompareTag("DoorWay"))
-        //             {
-        //                 Debug.Log("Oke");
-        //                 isPlayerNearby = false;
-        //             }
-        //         }
+        private void SwitchPadlock()
+        {
+            if (isOpen)
+            {
+                lockButton_Opened.gameObject.SetActive(true);
+                lockButton_Closed.gameObject.SetActive(false);
+            }
+
+            else
+            {
+                lockButton_Opened.gameObject.SetActive(false);
+                lockButton_Closed.gameObject.SetActive(true);
+            }
+        }
     }
 }
