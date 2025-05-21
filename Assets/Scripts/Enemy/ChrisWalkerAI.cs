@@ -4,11 +4,10 @@ using UnityEngine.AI;
 
 public class ChrisWalkerAI : MonoBehaviour
 {
-    [SerializeField] private float attackRange;
-    [SerializeField] private float eyeHeight;
-    [SerializeField] private float hearingRange;
     [SerializeField] private float visionRange;
     [SerializeField] private float viewAngle;
+    [SerializeField] private float attackRange;
+    [SerializeField] private float eyeHeight;
     [SerializeField] private Transform[] patrolPoints;
     private float currentVelocity = 0f;
     private float nextLookTime = 0f;
@@ -19,6 +18,7 @@ public class ChrisWalkerAI : MonoBehaviour
     private int currentPointIndex = 0;
     private NavMeshAgent agent;
     private Transform player;
+    private bool isAttacking = false;
 
     private void Awake()
     {
@@ -39,22 +39,21 @@ public class ChrisWalkerAI : MonoBehaviour
 
     private void Update()
     {
+        if (isAttacking) return;
+
         float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
         bool isRunning = distanceToPlayer < visionRange;
         float targetVelocity = isRunning ? 1f : 0.5f;
 
         if (distanceToPlayer < visionRange && CanSeePlayer(player))
         {
+            chrisWalkerAnimation.StopAttackAnimation();
             SoundManager.Instance.PlayChrisWalkerChaseSound();
             currentVelocity = Mathf.Lerp(currentVelocity, targetVelocity, Time.deltaTime * 5f);
             chrisWalkerAnimation.SetVelocity(currentVelocity);
             agent.speed = 15f;
 
-            if (!agent.pathPending) agent.SetDestination(player.transform.position);
-        }
-        else if (distanceToPlayer < attackRange)
-        {
-            AttackPlayer();
+            if (!agent.pathPending && !isAttacking) agent.SetDestination(player.transform.position);
         }
         else if (!agent.pathPending && agent.remainingDistance < 0.5f)
         {
@@ -67,13 +66,50 @@ public class ChrisWalkerAI : MonoBehaviour
         }
         else if (agent.velocity.magnitude > 0.1f && !isLookingAround)
         {
+            if (isAttacking) return;
+
             lookTimer += Time.deltaTime;
             if (lookTimer >= nextLookTime)
             {
                 StartCoroutine(PerformLookAround());
             }
         }
+    }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            isAttacking = true;
+            agent.isStopped = true;
+            SoundManager.Instance.PlayBeingHitSound();
+            chrisWalkerAnimation.SetVelocity(0f);
+            chrisWalkerAnimation.StopLookAroundAnimation();
+            chrisWalkerAnimation.PlayAttackAnimation();
+            agent.velocity = Vector3.zero;
+            AttackPlayer();
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            StartCoroutine(WaitForAttackToFinish());
+        }
+    }
+
+    private IEnumerator WaitForAttackToFinish()
+    {
+
+        yield return new WaitForSeconds(0.5f);
+
+        isAttacking = false;
+        agent.isStopped = false;
+        chrisWalkerAnimation.SetVelocity(1f);
+        agent.speed = 15f;
+        chrisWalkerAnimation.SetVelocity(0.5f);
+        GoToNextPatrolPoint();
     }
 
     private IEnumerator PerformLookAround()

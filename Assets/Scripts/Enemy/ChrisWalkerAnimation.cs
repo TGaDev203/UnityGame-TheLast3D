@@ -28,4 +28,14 @@ public class ChrisWalkerAnimation : MonoBehaviour
     {
         chrisWalkerAnimation.SetBool("isLooking", false);
     }
+
+    public void PlayAttackAnimation()
+    {
+        chrisWalkerAnimation.SetBool("isAttacking", true);
+    }
+
+    public void StopAttackAnimation()
+    {
+        chrisWalkerAnimation.SetBool("isAttacking", false);
+    }
 }

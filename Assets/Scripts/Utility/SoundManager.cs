@@ -5,16 +5,24 @@ public class SoundManager : MonoBehaviour
 {
     public static SoundManager Instance { get; private set; }
 
-    [SerializeField] private AudioSource backgroundAudioSource;
-    [SerializeField] private AudioSource soundEffectAudioSource;
+    [SerializeField] public AudioSource backgroundAudioSource;
+    [SerializeField] public AudioSource soundEffectAudioSource;
+    [SerializeField] private AudioClip beingHitSound;
     [SerializeField] private AudioClip chrisWalkerVoiceAndChainSound;
     [SerializeField] private AudioClip chrisWalkerChaseSound;
     [SerializeField] private AudioClip[] footStepSounds;
     [SerializeField] private AudioClip gamePlaySound;
     [SerializeField] private AudioClip mainMenuSound;
+    [SerializeField] private AudioClip knockDoorSound;
+    [SerializeField] private AudioClip openDoorSound;
+    [SerializeField] private AudioClip closeDoorSound;
     [SerializeField] private float footstepInterval;
     private float footstepTimer;
     private float nextFootstepTime;
+
+    public void PlayOpenDoorSound() => PlaySound(openDoorSound);
+    public void PlayCloseDoorSound() => PlaySound(closeDoorSound);
+    public void PlayBeingHitSound() => PlaySound(beingHitSound);
 
     private void Awake()
     {
@@ -22,11 +30,17 @@ public class SoundManager : MonoBehaviour
         {
             Instance = this;
         }
-        else Destroy(gameObject);
+        else
+            Destroy(gameObject);
     }
 
     private void Start()
     {
+        if (SceneManager.GetActiveScene().name == "Gameplay_Scene")
+        {
+            PlaySound(knockDoorSound);
+        }
+
         PlayBackgroundSound();
     }
 
@@ -68,11 +82,11 @@ public class SoundManager : MonoBehaviour
         soundEffectAudioSource.clip = chrisWalkerChaseSound;
         soundEffectAudioSource.Play();
     }
+
     public void StopChrisWalkerChaseSound()
     {
         if (soundEffectAudioSource.clip == chrisWalkerChaseSound && soundEffectAudioSource.isPlaying)
         {
-
             soundEffectAudioSource.loop = false;
             soundEffectAudioSource.clip = chrisWalkerChaseSound;
             soundEffectAudioSource.Stop();

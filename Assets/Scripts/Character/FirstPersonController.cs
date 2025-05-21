@@ -1,5 +1,4 @@
 using System.Collections;
-using UnityEditor.ShaderGraph.Serialization;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -28,22 +27,18 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private bool isOpen = false;
         private CharacterController characterController;
         private CharacterAnimation characterAnimation;
+        private float bobTimer = 0f;
+        private float halfScreenWidth;
         private Vector2 currentRotation;
         private Vector2 input;
+        private Vector2 lookInput;
         private Vector2 moveTouchStartPosition;
         private Vector2 rotationVelocity;
         private Vector2 targetRotation;
-        private Animator animator;
-        private float bobTimer = 0f;
         private Vector3 originalCameraLocalPos;
-        private Transform detectedDoorLeaf = null;
-
-        // Touch detection
-        private float halfScreenWidth;
+        private Animator animator;
         private int leftFingerId, rightFingerId;
-
-        // Camera controller
-        private Vector2 lookInput;
+        private Transform detectedDoorLeaf = null;
 
         private void Awake()
         {
@@ -176,8 +171,18 @@ namespace UnityStandardAssets.Characters.FirstPerson
             targetRotation.y -= lookInput.y * cameraSensitivity;
             targetRotation.y = Mathf.Clamp(targetRotation.y, -90f, 90f);
 
-            currentRotation.x = Mathf.SmoothDamp(currentRotation.x, targetRotation.x, ref rotationVelocity.x, smoothTime);
-            currentRotation.y = Mathf.SmoothDamp(currentRotation.y, targetRotation.y, ref rotationVelocity.y, smoothTime);
+            currentRotation.x = Mathf.SmoothDamp(
+                currentRotation.x,
+                targetRotation.x,
+                ref rotationVelocity.x,
+                smoothTime
+            );
+            currentRotation.y = Mathf.SmoothDamp(
+                currentRotation.y,
+                targetRotation.y,
+                ref rotationVelocity.y,
+                smoothTime
+            );
 
             transform.rotation = Quaternion.Euler(0, currentRotation.x, 0);
             cameraTransform.localRotation = Quaternion.Euler(currentRotation.y, 0, 0);
@@ -200,7 +205,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
             float moveSpeed = isRunning ? runSpeed : walkSpeed;
 
             Vector2 movementDirection = input.normalized * moveSpeed * Time.deltaTime;
-            characterController.Move(transform.right * movementDirection.x + transform.forward * movementDirection.y);
+            characterController.Move(
+                transform.right * movementDirection.x + transform.forward * movementDirection.y
+            );
 
             if (isRunning)
             {
@@ -239,38 +246,43 @@ namespace UnityStandardAssets.Characters.FirstPerson
             float yOffset = Mathf.Sin(bobTimer) * bobAmount;
             float xOffset = Mathf.Cos(bobTimer * 0.5f) * bobAmount * 0.5f;
 
-            cameraTransform.localPosition = originalCameraLocalPos + new Vector3(xOffset, yOffset, 0);
+            cameraTransform.localPosition =
+                originalCameraLocalPos + new Vector3(xOffset, yOffset, 0);
         }
 
-public void OpenDoor()
-{
-    if (isPlayerNearby && detectedDoorLeaf != null)
-    {
-        Debug.Log("Trying to open door...");
-        isOpen = !isOpen;
+        public void OpenDoor()
+        {
+            if (isPlayerNearby && detectedDoorLeaf != null)
+            {
+                Debug.Log("Trying to open door...");
+                isOpen = !isOpen;
 
-        float targetAngle = isOpen ? -90f : 0f;
-        StartCoroutine(RotateDoor(targetAngle, 0.5f));
-    }
-}
+                float targetAngle = isOpen ? -90f : 0f;
+                StartCoroutine(RotateDoor(targetAngle, 0.5f));
 
-private IEnumerator RotateDoor(float targetAngle, float duration)
-{
-    Quaternion startRotation = detectedDoorLeaf.rotation;
-    Quaternion endRotation = Quaternion.Euler(0f, targetAngle, 0f);
-    float elapsed = 0f;
+                if (isOpen)
+                    SoundManager.Instance.PlayOpenDoorSound();
+                else
+                    SoundManager.Instance.PlayCloseDoorSound();
+            }
+        }
 
-    while (elapsed < duration)
-    {
-        elapsed += Time.deltaTime;
-        float t = Mathf.Clamp01(elapsed / duration);
-        detectedDoorLeaf.rotation = Quaternion.Lerp(startRotation, endRotation, t);
-        yield return null;
-    }
+        private IEnumerator RotateDoor(float targetAngle, float duration)
+        {
+            Quaternion startRotation = detectedDoorLeaf.rotation;
+            Quaternion endRotation = Quaternion.Euler(0f, targetAngle, 0f);
+            float elapsed = 0f;
 
-    detectedDoorLeaf.rotation = endRotation;
-}
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                detectedDoorLeaf.rotation = Quaternion.Lerp(startRotation, endRotation, t);
+                yield return null;
+            }
 
+            detectedDoorLeaf.rotation = endRotation;
+        }
 
         private void CheckForDoor()
         {
@@ -312,7 +324,6 @@ private IEnumerator RotateDoor(float targetAngle, float duration)
                 lockButton_Opened.gameObject.SetActive(true);
                 lockButton_Closed.gameObject.SetActive(false);
             }
-
             else
             {
                 lockButton_Opened.gameObject.SetActive(false);
