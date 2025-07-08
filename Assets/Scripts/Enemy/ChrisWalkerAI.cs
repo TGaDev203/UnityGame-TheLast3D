@@ -1,175 +1,57 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.AI;
 
-public class ChrisWalkerAI : MonoBehaviour
+public class ChrisWalkerAI : EnemyBase
 {
-    [SerializeField] private float visionRange;
-    [SerializeField] private float viewAngle;
-    [SerializeField] private float attackRange;
-    [SerializeField] private float eyeHeight;
-    [SerializeField] private Transform[] patrolPoints;
-    private float currentVelocity = 0f;
-    private float nextLookTime = 0f;
-    private float lookTimer = 0f;
-    private AudioSource chrisWalkerAudioSource;
-    private bool isLookingAround = false;
-    private ChrisWalkerAnimation chrisWalkerAnimation;
-    private int currentPointIndex = 0;
-    private NavMeshAgent agent;
-    private Transform player;
-    private bool isAttacking = false;
-
-    private void Awake()
+    protected override void Awake()
     {
-        chrisWalkerAnimation = GetComponent<ChrisWalkerAnimation>();
-        player = GameObject.FindGameObjectWithTag("Player")?.transform;
-        chrisWalkerAudioSource = GetComponent<AudioSource>();
+        base.Awake();
     }
 
-    private void Start()
+    protected override void Start()
     {
-        nextLookTime = Random.Range(5f, 10f);
-        chrisWalkerAnimation.SetVelocity(0.5f);
-
-        SoundManager.Instance.PlayChrisWalkerVoiceAndChainSound(chrisWalkerAudioSource);
-        agent = GetComponent<NavMeshAgent>();
-        GoToNextPatrolPoint();
+        base.Start();
+        SoundManager.Instance.PlayChrisWalkerVoiceAndChainSound(audioSource);
+        enemyAnim.SetVelocity(0.5f);
     }
 
-    private void Update()
+    protected override void HandleChase()
     {
-        if (isAttacking) return;
-
-        float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
-        bool isRunning = distanceToPlayer < visionRange;
-        float targetVelocity = isRunning ? 1f : 0.5f;
-
-        if (distanceToPlayer < visionRange && CanSeePlayer(player))
-        {
-            chrisWalkerAnimation.StopAttackAnimation();
-            SoundManager.Instance.PlayChrisWalkerChaseSound();
-            currentVelocity = Mathf.Lerp(currentVelocity, targetVelocity, Time.deltaTime * 5f);
-            chrisWalkerAnimation.SetVelocity(currentVelocity);
-            agent.speed = 15f;
-
-            if (!agent.pathPending && !isAttacking) agent.SetDestination(player.transform.position);
-        }
-        else if (!agent.pathPending && agent.remainingDistance < 0.5f)
-        {
-            chrisWalkerAnimation.SetVelocity(targetVelocity);
-
-            SoundManager.Instance.StopChrisWalkerChaseSound();
-            agent.speed = 5f;
-            chrisWalkerAnimation.SetVelocity(0.5f);
-            GoToNextPatrolPoint();
-        }
-        else if (agent.velocity.magnitude > 0.1f && !isLookingAround)
-        {
-            if (isAttacking) return;
-
-            lookTimer += Time.deltaTime;
-            if (lookTimer >= nextLookTime)
-            {
-                StartCoroutine(PerformLookAround());
-            }
-        }
+        base.HandleChase();
+        enemyAnim.StopAttack();
+        SoundManager.Instance.PlayChrisWalkerChaseSound();
+        currentVelocity = Mathf.Lerp(currentVelocity, 1f, Time.deltaTime * 5f);
+        enemyAnim.SetVelocity(currentVelocity);
     }
 
-    private void OnTriggerEnter(Collider other)
+    protected override void HandlePatrol()
     {
-        if (other.CompareTag("Player"))
-        {
-            isAttacking = true;
-            agent.isStopped = true;
-            SoundManager.Instance.PlayBeingHitSound();
-            chrisWalkerAnimation.SetVelocity(0f);
-            chrisWalkerAnimation.StopLookAroundAnimation();
-            chrisWalkerAnimation.PlayAttackAnimation();
-            agent.velocity = Vector3.zero;
-            AttackPlayer();
-        }
+        base.HandlePatrol();
+        enemyAnim.SetVelocity(0.5f);
+        SoundManager.Instance.StopChrisWalkerChaseSound();
     }
 
-    private void OnTriggerExit(Collider other)
+    protected override IEnumerator PerformLookAround()
     {
-        if (other.CompareTag("Player"))
-        {
-            StartCoroutine(WaitForAttackToFinish());
-        }
+        enemyAnim.SetVelocity(0f);
+        enemyAnim.PlayLookAround();
+        yield return base.PerformLookAround();
+        enemyAnim.StopLookAround();
+        enemyAnim.SetVelocity(0.5f);
     }
 
-    private IEnumerator WaitForAttackToFinish()
+    protected override void AttackPlayer()
     {
-
-        yield return new WaitForSeconds(0.5f);
-
-        isAttacking = false;
-        agent.isStopped = false;
-        chrisWalkerAnimation.SetVelocity(1f);
-        agent.speed = 15f;
-        chrisWalkerAnimation.SetVelocity(0.5f);
-        GoToNextPatrolPoint();
-    }
-
-    private IEnumerator PerformLookAround()
-    {
-        isLookingAround = true;
-        lookTimer = 5f;
-        nextLookTime = Random.Range(10f, 20f);
-
-        agent.isStopped = true;
-        chrisWalkerAnimation.SetVelocity(0f);
-        chrisWalkerAnimation.PlayLookAroundAnimation();
-
-        yield return new WaitForSeconds(Random.Range(2f, 4f));
-
-        agent.isStopped = false;
-        chrisWalkerAnimation.StopLookAroundAnimation();
-        chrisWalkerAnimation.SetVelocity(0.5f);
-        isLookingAround = false;
-    }
-
-    private bool CanSeePlayer(Transform player)
-    {
-        Vector3 directionToPlayer = player.position - transform.position;
-        float distanceToPlayer = directionToPlayer.magnitude;
-        float shortRange = visionRange * 0.4f;
-
-        float angleToPlayer = Vector3.Angle(transform.forward, directionToPlayer);
-        if (distanceToPlayer <= visionRange && angleToPlayer <= viewAngle / 2f)
-        {
-            Ray longRay = new Ray(transform.position + Vector3.up * eyeHeight, directionToPlayer);
-            if (Physics.Raycast(longRay, out RaycastHit hit1, distanceToPlayer))
-            {
-                if (hit1.transform.CompareTag("Player"))
-                    return true;
-            }
-        }
-
-        if (distanceToPlayer <= shortRange)
-        {
-            Ray shortRay = new Ray(transform.position + Vector3.up * eyeHeight, directionToPlayer);
-            if (Physics.Raycast(shortRay, out RaycastHit hit2, distanceToPlayer))
-            {
-                if (hit2.transform.CompareTag("Player"))
-                    return true;
-            }
-        }
-
-        return false;
-    }
-
-    private void GoToNextPatrolPoint()
-    {
-        if (patrolPoints.Length == 0) return;
-
-        agent.destination = patrolPoints[currentPointIndex].position;
-        currentPointIndex = (currentPointIndex + 1) % patrolPoints.Length;
-    }
-
-    private void AttackPlayer()
-    {
+        base.AttackPlayer();
         Debug.Log("Chris Walker attacks!");
+        enemyAnim.SetVelocity(0f);
+        enemyAnim.StopLookAround();
+        enemyAnim.PlayAttack();
+    }
+
+    protected override IEnumerator WaitForAttackToFinish()
+    {
+        yield return base.WaitForAttackToFinish();
+        enemyAnim.SetVelocity(1f);
     }
 }
