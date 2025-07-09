@@ -10,28 +10,27 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private AudioClip beingHitSound;
     [SerializeField] private AudioClip chrisWalkerVoiceAndChainSound;
     [SerializeField] private AudioClip chrisWalkerChaseSound;
-    [SerializeField] private AudioClip[] footStepSounds;
-    [SerializeField] private AudioClip gamePlaySound;
-    [SerializeField] private AudioClip mainMenuSound;
-    [SerializeField] private AudioClip knockDoorSound;
-    [SerializeField] private AudioClip openDoorSound;
     [SerializeField] private AudioClip closeDoorSound;
+    [SerializeField] private AudioClip[] footStepSounds;
     [SerializeField] private float footstepInterval;
+    [SerializeField] private AudioClip gamePlaySound;
+    [SerializeField] private AudioClip knockDoorSound;
+    [SerializeField] private AudioClip mainMenuSound;
+    [SerializeField] private AudioClip openDoorSound;
+    [SerializeField] private AudioClip playerDeath;
     private float footstepTimer;
     private float nextFootstepTime;
 
     public void PlayOpenDoorSound() => PlaySound(openDoorSound);
     public void PlayCloseDoorSound() => PlaySound(closeDoorSound);
     public void PlayBeingHitSound() => PlaySound(beingHitSound);
+    public void PlayPlayerDeathSound() => PlaySound(playerDeath);
 
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else
-            Destroy(gameObject);
+        if (Instance == null) Instance = this;
+        
+        else Destroy(gameObject);
     }
 
     private void Start()

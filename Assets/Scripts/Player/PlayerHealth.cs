@@ -1,16 +1,29 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using UnityStandardAssets.Characters.FirstPerson;
 
 public class PlayerHealth : MonoBehaviour
 {
-    [SerializeField] private Avatar deathAvatar;
-    [SerializeField] private Transform cameraDeathAnchor;
+    [Header("Health Settings")]
     [SerializeField] private int maxHealth = 100;
+    [SerializeField] private float damageCooldown = 1f;
+
+    [Header("Death Settings")]
+    [SerializeField] private Transform cameraDeathAnchor;
     [SerializeField] private Transform cameraTransform;
+    [SerializeField] private Avatar deathAvatar;
+    [SerializeField] private GameObject crosshair;
+
+    [Header("Fade Effect")]
+    [SerializeField] private Image fadeImage;
+    [SerializeField] private float fadeDuration = 3f;
+
     private BloodOverlay bloodOverlay;
-    private bool isDead = false;
     private int currentHealth;
+    private float damageTimer = 0f;
+    private bool isDead = false;
 
     public bool IsDead => isDead;
 
@@ -19,18 +32,32 @@ public class PlayerHealth : MonoBehaviour
         bloodOverlay = FindAnyObjectByType<BloodOverlay>();
     }
 
-    void Start()
+    private void Start()
     {
         currentHealth = maxHealth;
         bloodOverlay?.UpdateOverlay(currentHealth, maxHealth);
+        SetFadeAlpha(0);
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void Update()
     {
-        if (other.CompareTag("Enemy"))
+        if (damageTimer > 0f)
         {
-            SoundManager.Instance.PlayBeingHitSound();
-            TakeDamage(20);
+            damageTimer -= Time.deltaTime;
+        }
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.CompareTag("Enemy") && damageTimer <= 0f && !isDead)
+        {
+            int damage = 20;
+            TakeDamage(damage);
+            damageTimer = damageCooldown;
+
+            if (currentHealth - damage > 0) SoundManager.Instance.PlayBeingHitSound();
+
+            else SoundManager.Instance.PlayPlayerDeathSound();
         }
     }
 
@@ -39,9 +66,9 @@ public class PlayerHealth : MonoBehaviour
         if (isDead) return;
 
         currentHealth -= damage;
-
         currentHealth = Mathf.Max(currentHealth, 0);
-        bloodOverlay.UpdateOverlay(currentHealth, maxHealth);
+
+        bloodOverlay?.UpdateOverlay(currentHealth, maxHealth);
 
         Debug.Log($"Player took {damage} damage. Current HP: {currentHealth}");
 
@@ -54,6 +81,9 @@ public class PlayerHealth : MonoBehaviour
     private void Die()
     {
         if (isDead) return;
+        isDead = true;
+
+        crosshair.SetActive(false);
 
         Animator animator = GetComponent<Animator>();
         if (animator != null)
@@ -63,14 +93,17 @@ public class PlayerHealth : MonoBehaviour
 
             if (cameraDeathAnchor != null)
             {
-                cameraTransform.transform.SetParent(cameraDeathAnchor);
+                cameraTransform.SetParent(cameraDeathAnchor);
                 cameraTransform.localPosition = Vector3.zero;
-
                 cameraTransform.localRotation = Quaternion.identity;
             }
+        }
 
-            GetComponent<FirstPersonController>().SetBobAmountValue(0);
-            GetComponent<FirstPersonController>().DisableLookAround();
+        FirstPersonController fpc = GetComponent<FirstPersonController>();
+        if (fpc != null)
+        {
+            fpc.SetBobAmountValue(0);
+            fpc.DisableLookAround();
         }
 
         CharacterController cc = GetComponent<CharacterController>();
@@ -79,20 +112,38 @@ public class PlayerHealth : MonoBehaviour
             cc.enabled = false;
         }
 
-        isDead = true;
         Debug.Log("Player died!");
-
         DisableAllEnemyAnimations();
 
-        StartCoroutine(RestartAfterDelay());
+        StartCoroutine(FadeAndReloadSceneWithDelay());
     }
 
-    private IEnumerator RestartAfterDelay()
+    private IEnumerator FadeAndReloadSceneWithDelay()
     {
-        yield return new WaitForSeconds(5f);
-        UnityEngine.SceneManagement.SceneManager.LoadScene(
-            UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
-        );
+        yield return new WaitForSeconds(7f);
+
+        float elapsed = 0f;
+        Color color = fadeImage.color;
+
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = Mathf.Clamp01(elapsed / fadeDuration);
+            SetFadeAlpha(alpha);
+            yield return null;
+        }
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    private void SetFadeAlpha(float alpha)
+    {
+        if (fadeImage != null)
+        {
+            Color c = fadeImage.color;
+            c.a = alpha;
+            fadeImage.color = c;
+        }
     }
 
     private void DisableAllEnemyAnimations()
