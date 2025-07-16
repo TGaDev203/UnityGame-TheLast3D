@@ -55,9 +55,9 @@ public class PlayerHealth : MonoBehaviour
             TakeDamage(damage);
             damageTimer = damageCooldown;
 
-            if (currentHealth - damage > 0) SoundManager.Instance.PlayBeingHitSound();
+            SoundManager.Instance.PlayBeingHitSound();
 
-            else SoundManager.Instance.PlayPlayerDeathSound();
+            if (currentHealth - damage <= 0) SoundManager.Instance.PlayPlayerDeathSound();
         }
     }
 

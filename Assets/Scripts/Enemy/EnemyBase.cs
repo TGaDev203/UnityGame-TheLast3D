@@ -79,7 +79,7 @@ public abstract class EnemyBase : MonoBehaviour
 
     protected virtual void HandleChase()
     {
-        agent.speed = 20f;
+        agent.speed = 25f;
 
         if (!agent.pathPending && !isAttacking)
         {

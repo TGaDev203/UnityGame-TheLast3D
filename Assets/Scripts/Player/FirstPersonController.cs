@@ -20,10 +20,12 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private float animationSmoothTime;
         [SerializeField] private float cameraSensitivity;
         [SerializeField] private float doorCheckDistance;
+        [SerializeField] private float chestCheckDistance;
         [SerializeField] private float smoothTime;
         [SerializeField] private Transform cameraTransform;
         private bool canLookAround = true;
         private bool canToggleDoor = true;
+        private bool canToggleChest = true;
         private bool isPlayerNearby = false;
         private bool isMoving = false;
         private CharacterController characterController;
@@ -40,6 +42,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private Vector3 originalCameraLocalPos;
         private Animator animator;
         private DoorController detectedDoor;
+        private ChestController detectedChest;
         private int leftFingerId, rightFingerId;
         private PlayerHealth playerHealth;
 
@@ -95,7 +98,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
 
             HandleHeadBob();
-            CheckForDoor();
+            // CheckForDoor();
+            // CheckForChest();
+            CheckForInteractables();
         }
 
         private void GetTouchInput()
@@ -118,7 +123,14 @@ namespace UnityStandardAssets.Characters.FirstPerson
                         else if (touch.position.x > halfScreenWidth && rightFingerId == -1)
                         {
                             rightFingerId = touch.fingerId;
+
+                            float yaw = transform.rotation.eulerAngles.y;
+                            currentRotation.x = yaw;
+                            targetRotation.x = yaw;
+
+                            Debug.Log("Synced yaw rotation: " + yaw);
                         }
+
 
                         break;
 
@@ -271,27 +283,43 @@ namespace UnityStandardAssets.Characters.FirstPerson
             yield return new WaitForSeconds(doorToggleCooldown);
             canToggleDoor = true;
         }
+private void CheckForInteractables()
+{
+    Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
 
-        private void CheckForDoor()
+    if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Max(doorCheckDistance, chestCheckDistance)))
+    {
+        // Kiểm tra Door
+        DoorController door = hit.collider.GetComponentInParent<DoorController>();
+        if (door != null && Vector3.Distance(cameraTransform.position, hit.point) <= doorCheckDistance)
         {
-            Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
-            if (Physics.Raycast(ray, out RaycastHit hit, doorCheckDistance))
-            {
-                DoorController door = hit.collider.GetComponentInParent<DoorController>();
-                if (door != null)
-                {
-                    detectedDoor = door;
-                    isPlayerNearby = true;
-                    SwitchPadlock();
-                    return;
-                }
-            }
-
-            isPlayerNearby = false;
-            detectedDoor = null;
-            lockButton_Closed?.gameObject.SetActive(false);
-            lockButton_Opened?.gameObject.SetActive(false);
+            detectedDoor = door;
+            detectedChest = null;
+            isPlayerNearby = true;
+            SwitchPadlock();
+            return;
         }
+
+        // Kiểm tra Chest
+        ChestController chest = hit.collider.GetComponentInParent<ChestController>();
+        if (chest != null && Vector3.Distance(cameraTransform.position, hit.point) <= chestCheckDistance)
+        {
+            detectedChest = chest;
+            detectedDoor = null;
+            isPlayerNearby = true;
+SwitchPadlock();
+            return;
+        }
+    }
+
+    // Nếu không phát hiện gì
+    isPlayerNearby = false;
+    detectedDoor = null;
+    detectedChest = null;
+    lockButton_Closed?.gameObject.SetActive(false);
+    lockButton_Opened?.gameObject.SetActive(false);
+}
+
 
         private void SwitchPadlock()
         {
@@ -306,6 +334,23 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 lockButton_Closed.gameObject.SetActive(true);
             }
         }
+
+        // Gọi khi nhấn nút mở hoặc điều kiện mở rương
+public void OpenChest()
+{
+    if (isPlayerNearby && detectedChest != null && canToggleChest)
+    {
+        detectedChest.ToggleChest();
+        StartCoroutine(ChestToggleCooldown());
+    }
+}
+
+private IEnumerator ChestToggleCooldown()
+{
+    canToggleChest = false;
+    yield return new WaitForSeconds(doorToggleCooldown);
+    canToggleChest = true;
+}
 
         public void SetBobAmountValue(float value)
         {

@@ -4,8 +4,8 @@ using UnityEngine;
 public class DoorController : MonoBehaviour
 {
     [SerializeField] private Transform doorLeaf;
-    [SerializeField] private float openAngle = 90f;
-    [SerializeField] private float openDuration = 0.5f;
+    [SerializeField] private float openAngle;
+    [SerializeField] private float openDuration;
     [SerializeField] private bool invertRotation = false;
 
     private bool isOpen = false;
@@ -13,6 +13,12 @@ public class DoorController : MonoBehaviour
 
     public void ToggleDoor()
     {
+        if (CompareTag("Locked"))
+        {
+            SoundManager.Instance.PlayLockedSound();
+            return;
+        }
+
         isOpen = !isOpen;
 
         float angle = isOpen ? openAngle : 0f;

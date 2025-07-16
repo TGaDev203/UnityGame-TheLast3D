@@ -4,21 +4,20 @@
 TagManager:
   serializedVersion: 3
   tags:
-  - DoorWay
-  - DoorLeaf
   - Enemy
+  - Locked
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Item
   - Water
   - UI
   - Player
   - Enemy
-  - 
-  - 
-  - 
+  - Wall
+  - Floor
+  - Indoor
   - 
   - 
   - 
