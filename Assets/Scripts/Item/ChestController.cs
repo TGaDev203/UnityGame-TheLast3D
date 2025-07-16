@@ -14,6 +14,12 @@ public class ChestController : MonoBehaviour
 
     public void ToggleChest()
     {
+        if (CompareTag("Locked"))
+        {
+            SoundManager.Instance.PlayLockedSound();
+            return;
+        }
+
         isOpen = !isOpen;
 
         float angle = isOpen ? openAngle : closeAngle;
