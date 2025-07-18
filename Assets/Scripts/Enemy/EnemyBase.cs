@@ -151,7 +151,7 @@ public abstract class EnemyBase : MonoBehaviour
             StartCoroutine(WaitForAttackToFinish());
         }
     }
-    
+
     protected virtual void AttackPlayer()
     {
         isAttacking = true;

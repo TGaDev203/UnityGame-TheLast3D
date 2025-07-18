@@ -1,4 +1,7 @@
+using System;
 using System.Collections;
+using System.Runtime.CompilerServices;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,30 +11,36 @@ namespace UnityStandardAssets.Characters.FirstPerson
     {
         [SerializeField] private Button lockButton_Closed;
         [SerializeField] private Button lockButton_Opened;
+        [SerializeField] private float animationSmoothTime;
+        [SerializeField] private float cameraSensitivity;
+        [SerializeField] private float chestCheckDistance;
+        [SerializeField] private float doorCheckDistance;
         [SerializeField] private float idleBobAmount;
         [SerializeField] private float idleBobSpeed;
         [SerializeField] private float moveInputDeadZone;
         [SerializeField] private float runBobAmount;
         [SerializeField] private float runBobSpeed;
         [SerializeField] private float runSpeed;
+        [SerializeField] private float smoothTime;
+        [SerializeField] private float swipeSpeedThreshold = 0.5f;
+        [SerializeField] private float rotationThreshold = 20f;
         [SerializeField] private float walkBobAmount;
         [SerializeField] private float walkBobSpeed;
         [SerializeField] private float walkSpeed;
-        [SerializeField] private float animationSmoothTime;
-        [SerializeField] private float cameraSensitivity;
-        [SerializeField] private float doorCheckDistance;
-        [SerializeField] private float chestCheckDistance;
-        [SerializeField] private float smoothTime;
         [SerializeField] private Transform cameraTransform;
         private bool canLookAround = true;
         private bool canToggleDoor = true;
         private bool canToggleChest = true;
         private bool isPlayerNearby = false;
         private bool isMoving = false;
+        private bool isTurning = false;
         private CharacterController characterController;
         private PlayerAnimation characterAnimation;
+        private float bodyRotationY;
+        private float bodyTurnSpeed = 150f;
         private float bobTimer = 0f;
-        private float doorToggleCooldown = 0.5f;
+        private float bodyYaw;
+        private float doorToggleCooldown = 1f;
         private float halfScreenWidth;
         private Vector2 currentRotation;
         private Vector2 input;
@@ -44,6 +53,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private DoorController detectedDoor;
         private ChestController detectedChest;
         private int leftFingerId, rightFingerId;
+        private int turnLayerIndex;
         private PlayerHealth playerHealth;
 
         private void Awake()
@@ -78,6 +88,17 @@ namespace UnityStandardAssets.Characters.FirstPerson
                     cameraTransform.transform.localRotation = Quaternion.identity;
                 }
             }
+
+            bodyRotationY = transform.rotation.eulerAngles.y;
+            turnLayerIndex = animator.GetLayerIndex("Upper Body Layer");
+
+            float yaw = transform.rotation.eulerAngles.y;
+
+            currentRotation = new Vector2(yaw, 0);
+            targetRotation = currentRotation;
+
+            bodyRotationY = bodyYaw;
+            bodyYaw = yaw;
         }
 
         private void Update()
@@ -98,9 +119,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
 
             HandleHeadBob();
-            // CheckForDoor();
-            // CheckForChest();
             CheckForInteractables();
+
+            bodyYaw = Mathf.MoveTowardsAngle(bodyYaw, currentRotation.x, bodyTurnSpeed * Time.deltaTime);
+            transform.rotation = Quaternion.Euler(0, bodyYaw, 0);
+
         }
 
         private void GetTouchInput()
@@ -199,8 +222,47 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 smoothTime
             );
 
-            transform.rotation = Quaternion.Euler(0, currentRotation.x, 0);
             cameraTransform.localRotation = Quaternion.Euler(currentRotation.y, 0, 0);
+
+            float angleDifference = Mathf.DeltaAngle(bodyRotationY, currentRotation.x);
+            float swipeSpeed = Mathf.Abs(lookInput.x);
+            bool isPlayerIdle = input.sqrMagnitude <= moveInputDeadZone;
+
+            if (!isTurning && isPlayerIdle)
+            {
+                if (Mathf.Abs(angleDifference) > rotationThreshold || swipeSpeed > swipeSpeedThreshold)
+                {
+                    if (lookInput.x > 0)
+                        TriggerTurnRight();
+                    else if (lookInput.x < 0)
+                        TriggerTurnLeft();
+                }
+            }
+        }
+
+        private void TriggerTurnLeft()
+        {
+            StartCoroutine(PerformTurn("turnLeft"));
+        }
+
+        private void TriggerTurnRight()
+        {
+            StartCoroutine(PerformTurn("turnRight"));
+        }
+
+        private IEnumerator PerformTurn(string triggerName)
+        {
+            isTurning = true;
+            animator.SetLayerWeight(turnLayerIndex, 1);
+            animator.SetTrigger(triggerName);
+
+            yield return new WaitForSeconds(0.5f);
+
+            animator.SetLayerWeight(turnLayerIndex, 0);
+
+            bodyRotationY = currentRotation.x;
+
+            isTurning = false;
         }
 
         private void Move()
@@ -211,35 +273,45 @@ namespace UnityStandardAssets.Characters.FirstPerson
             {
                 isMoving = false;
                 characterAnimation.SetDirection(Vector2.zero);
+                characterAnimation.SetSpeedMultiplier(1f);
+                characterAnimation.SetIsRunning(false);  // Dừng state Run
                 return;
             }
 
             isMoving = true;
 
+            Vector2 movementInput = input.normalized;
+            characterAnimation.SetDirection(movementInput);
+
             float inputMagnitude = input.magnitude;
             bool isRunning = inputMagnitude > 400f;
 
-            float moveSpeed = isRunning ? runSpeed : walkSpeed;
+            bool isMovingStraightForward = isRunning &&
+                                            movementInput.y > 0.7f &&
+                                            Mathf.Abs(movementInput.x) < 0.3f;
 
-            Vector2 movementDirection = input.normalized * moveSpeed * Time.deltaTime;
+            characterAnimation.SetIsRunning(isMovingStraightForward);
+
+            if (!isMovingStraightForward)
+            {
+                float speedMultiplier = isRunning ? 1.5f : 1f;
+                characterAnimation.SetSpeedMultiplier(speedMultiplier);
+            }
+            else
+            {
+                characterAnimation.SetSpeedMultiplier(1f);
+            }
+
+            float moveSpeed = isRunning ? runSpeed : walkSpeed;
+            Vector2 movementDirection = movementInput * moveSpeed * Time.deltaTime;
+
             characterController.Move(
                 transform.right * movementDirection.x + transform.forward * movementDirection.y
             );
 
-            if (isRunning)
-            {
-                characterAnimation.PlayRunAnimation();
-            }
-            else
-            {
-                characterAnimation.StopRunAnimation();
-            }
-
-            Vector2 movementInput = input.normalized * (isRunning ? 1f : 0.5f);
-            characterAnimation.SetDirection(movementInput);
-
             SoundManager.Instance.PlayFootStepSounds(isRunning);
         }
+
 
         private void HandleHeadBob()
         {
@@ -283,42 +355,39 @@ namespace UnityStandardAssets.Characters.FirstPerson
             yield return new WaitForSeconds(doorToggleCooldown);
             canToggleDoor = true;
         }
-private void CheckForInteractables()
-{
-    Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
-
-    if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Max(doorCheckDistance, chestCheckDistance)))
-    {
-        // Kiểm tra Door
-        DoorController door = hit.collider.GetComponentInParent<DoorController>();
-        if (door != null && Vector3.Distance(cameraTransform.position, hit.point) <= doorCheckDistance)
+        private void CheckForInteractables()
         {
-            detectedDoor = door;
-            detectedChest = null;
-            isPlayerNearby = true;
-            SwitchPadlock();
-            return;
-        }
+            Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
 
-        // Kiểm tra Chest
-        ChestController chest = hit.collider.GetComponentInParent<ChestController>();
-        if (chest != null && Vector3.Distance(cameraTransform.position, hit.point) <= chestCheckDistance)
-        {
-            detectedChest = chest;
+            if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Max(doorCheckDistance, chestCheckDistance)))
+            {
+                DoorController door = hit.collider.GetComponentInParent<DoorController>();
+                if (door != null && Vector3.Distance(cameraTransform.position, hit.point) <= doorCheckDistance)
+                {
+                    detectedDoor = door;
+                    detectedChest = null;
+                    isPlayerNearby = true;
+                    SwitchPadlock();
+                    return;
+                }
+
+                ChestController chest = hit.collider.GetComponentInParent<ChestController>();
+                if (chest != null && Vector3.Distance(cameraTransform.position, hit.point) <= chestCheckDistance)
+                {
+                    detectedChest = chest;
+                    detectedDoor = null;
+                    isPlayerNearby = true;
+                    SwitchPadlock();
+                    return;
+                }
+            }
+
+            isPlayerNearby = false;
             detectedDoor = null;
-            isPlayerNearby = true;
-SwitchPadlock();
-            return;
+            detectedChest = null;
+            lockButton_Closed?.gameObject.SetActive(false);
+            lockButton_Opened?.gameObject.SetActive(false);
         }
-    }
-
-    // Nếu không phát hiện gì
-    isPlayerNearby = false;
-    detectedDoor = null;
-    detectedChest = null;
-    lockButton_Closed?.gameObject.SetActive(false);
-    lockButton_Opened?.gameObject.SetActive(false);
-}
 
 
         private void SwitchPadlock()
@@ -335,22 +404,21 @@ SwitchPadlock();
             }
         }
 
-        // Gọi khi nhấn nút mở hoặc điều kiện mở rương
-public void OpenChest()
-{
-    if (isPlayerNearby && detectedChest != null && canToggleChest)
-    {
-        detectedChest.ToggleChest();
-        StartCoroutine(ChestToggleCooldown());
-    }
-}
+        public void OpenChest()
+        {
+            if (isPlayerNearby && detectedChest != null && canToggleChest)
+            {
+                detectedChest.ToggleChest();
+                StartCoroutine(ChestToggleCooldown());
+            }
+        }
 
-private IEnumerator ChestToggleCooldown()
-{
-    canToggleChest = false;
-    yield return new WaitForSeconds(doorToggleCooldown);
-    canToggleChest = true;
-}
+        private IEnumerator ChestToggleCooldown()
+        {
+            canToggleChest = false;
+            yield return new WaitForSeconds(doorToggleCooldown);
+            canToggleChest = true;
+        }
 
         public void SetBobAmountValue(float value)
         {

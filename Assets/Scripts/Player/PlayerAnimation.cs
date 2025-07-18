@@ -26,4 +26,13 @@ public class PlayerAnimation : MonoBehaviour
     {
         playerAnimation.SetBool("isRunning", false);
     }
+
+    public void SetSpeedMultiplier(float value)
+    {
+        playerAnimation.SetFloat("speedMultiplier", value);
+    }
+    public void SetIsRunning(bool isRunning)
+    {
+        playerAnimation.SetBool("isRunning", isRunning);
+    }
 }

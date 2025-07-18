@@ -5,10 +5,10 @@ public class BloodOverlay : MonoBehaviour
 {
 	[SerializeField] private GameObject[] overlayLevels;
 	[SerializeField] private float fadeDelay = 0.5f;
-	    [SerializeField] private float autoHideDelay = 5f;
+	[SerializeField] private float autoHideDelay = 5f;
 
 	private Coroutine fadeCoroutine;
-    private Coroutine autoHideCoroutine;
+	private Coroutine autoHideCoroutine;
 
 	private void Start()
 	{
@@ -18,20 +18,20 @@ public class BloodOverlay : MonoBehaviour
 		}
 	}
 
-    public void UpdateOverlay(float currentHealth, float maxHealth)
-    {
-        int overlayIndex = GetOverlayIndex(currentHealth / maxHealth);
+	public void UpdateOverlay(float currentHealth, float maxHealth)
+	{
+		int overlayIndex = GetOverlayIndex(currentHealth / maxHealth);
 
-        if (fadeCoroutine != null)
-            StopCoroutine(fadeCoroutine);
+		if (fadeCoroutine != null)
+			StopCoroutine(fadeCoroutine);
 
-        fadeCoroutine = StartCoroutine(ShowOverlayWithFade(overlayIndex));
+		fadeCoroutine = StartCoroutine(ShowOverlayWithFade(overlayIndex));
 
-        if (autoHideCoroutine != null)
-            StopCoroutine(autoHideCoroutine);
+		if (autoHideCoroutine != null)
+			StopCoroutine(autoHideCoroutine);
 
-        autoHideCoroutine = StartCoroutine(AutoHideOverlayAfterDelay(autoHideDelay));
-    }
+		autoHideCoroutine = StartCoroutine(AutoHideOverlayAfterDelay(autoHideDelay));
+	}
 	private int GetOverlayIndex(float healthPercent)
 	{
 		if (overlayLevels.Length == 0) return -1;
@@ -40,35 +40,29 @@ public class BloodOverlay : MonoBehaviour
 		return Mathf.Clamp(index, 0, overlayLevels.Length - 1);
 	}
 
-private IEnumerator ShowOverlayWithFade(int indexToShow)
-{
-    yield return new WaitForSeconds(fadeDelay);
-
-    for (int i = 0; i < overlayLevels.Length; i++)
-    {
-        overlayLevels[i].SetActive(i <= indexToShow);
-    }
-}
-
-	
-	  private IEnumerator AutoHideOverlayAfterDelay(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        yield return StartCoroutine(FadeOutOverlayStepByStep());
-    }
-
-	private IEnumerator FadeOutOverlayStepByStep()
+	private IEnumerator ShowOverlayWithFade(int indexToShow)
 	{
-		// Giả sử overlayLevels được bật theo index từ thấp đến cao
-		// Giảm từ index cao xuống thấp
-		for (int i = overlayLevels.Length - 1; i >= 0; i--)
-		{
-			// Tắt overlay ở chỉ số i
-			overlayLevels[i].SetActive(false);
+		yield return new WaitForSeconds(fadeDelay);
 
-			// Chờ 0.3s trước khi tắt overlay tiếp theo (bạn có thể chỉnh thời gian này)
-			yield return new WaitForSeconds(0.1f);
+		for (int i = 0; i < overlayLevels.Length; i++)
+		{
+			overlayLevels[i].SetActive(i <= indexToShow);
 		}
 	}
 
+	private IEnumerator AutoHideOverlayAfterDelay(float delay)
+	{
+		yield return new WaitForSeconds(delay);
+		yield return StartCoroutine(FadeOutOverlayStepByStep());
+	}
+
+	private IEnumerator FadeOutOverlayStepByStep()
+	{
+		for (int i = overlayLevels.Length - 1; i >= 0; i--)
+		{
+			overlayLevels[i].SetActive(false);
+
+			yield return new WaitForSeconds(0.1f);
+		}
+	}
 }

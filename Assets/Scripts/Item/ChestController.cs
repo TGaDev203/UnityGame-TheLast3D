@@ -4,7 +4,7 @@ using UnityEngine;
 public class ChestController : MonoBehaviour
 {
     [SerializeField] private Transform chestLid;
-        [SerializeField] private float closeAngle;
+    [SerializeField] private float closeAngle;
 
     [SerializeField] private float openAngle;
     [SerializeField] private float openDuration;
@@ -31,7 +31,7 @@ public class ChestController : MonoBehaviour
 
         if (isOpen) SoundManager.Instance?.PlayOpenChestSound();
         else SoundManager.Instance?.PlayCloseChestSound();
-}
+    }
 
 
     private IEnumerator OpenChest(float angle, float duration)
@@ -49,6 +49,4 @@ public class ChestController : MonoBehaviour
 
         chestLid.localRotation = end;
     }
-
-    // public bool IsOpen => isOpen;
 }
