@@ -1,0 +1,11 @@
+Model Information:
+* title:	Torture Chair
+* source:	https://sketchfab.com/3d-models/torture-chair-b7b09fa455ed4c73a4c9db71693c2a62
+* author:	Yann Marzack (https://sketchfab.com/yzack)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Torture Chair" (https://sketchfab.com/3d-models/torture-chair-b7b09fa455ed4c73a4c9db71693c2a62) by Yann Marzack (https://sketchfab.com/yzack) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

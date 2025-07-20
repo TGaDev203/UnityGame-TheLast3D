@@ -1,0 +1,11 @@
+Model Information:
+* title:	Medic undead | Zombie medic
+* source:	https://sketchfab.com/3d-models/medic-undead-zombie-medic-9457320a7ab94d819877c48f1e131709
+* author:	UndeadWorld (https://sketchfab.com/pythonbass.py)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Medic undead | Zombie medic" (https://sketchfab.com/3d-models/medic-undead-zombie-medic-9457320a7ab94d819877c48f1e131709) by UndeadWorld (https://sketchfab.com/pythonbass.py) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

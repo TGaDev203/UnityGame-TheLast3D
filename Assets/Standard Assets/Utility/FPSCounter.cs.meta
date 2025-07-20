@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 22bbf57ec543cee42a5aa0ec2dd9e457
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 44045
+  packageName: Hospital Horror Pack
+  packageVersion: 1.0
+  assetPath: Assets/Standard Assets/Utility/FPSCounter.cs
+  uploadId: 77290
