@@ -167,4 +167,28 @@ public abstract class EnemyBase : MonoBehaviour
         isAttacking = false;
         agent.isStopped = false;
     }
+
+        protected void TryPlayVoice()
+    {
+        if (soundProfile != null && soundProfile.voiceSound != null)
+        {
+            SoundManager.Instance.PlayVoice(audioSource, soundProfile.voiceSound);
+        }
+    }
+
+    protected void TryPlayChaseSound()
+    {
+        if (soundProfile != null)
+        {
+            SoundManager.Instance.PlayChaseSound(soundProfile.chaseSound);
+        }
+    }
+
+    protected void TryStopChaseSound()
+    {
+        if (soundProfile != null)
+        {
+            SoundManager.Instance.StopChaseSound(soundProfile.chaseSound);
+        }
+    }
 }

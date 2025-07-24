@@ -33984,7 +33984,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!82 &1213367125
 AudioSource:
   m_ObjectHideFlags: 0
@@ -34158,7 +34158,7 @@ Transform:
   m_GameObject: {fileID: 1213367124}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0.70710677, z: 0.0004936178, w: 0.70710665}
-  m_LocalPosition: {x: 25.9, y: -3.5, z: 118}
+  m_LocalPosition: {x: 25.9, y: -3.5, z: 114.34}
   m_LocalScale: {x: 5.5, y: 5.5, z: 5.5}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -54296,13 +54296,13 @@ GameObject:
   - component: {fileID: 543450652009352643}
   - component: {fileID: 796336773}
   - component: {fileID: 796336778}
-  - component: {fileID: 796336777}
-  - component: {fileID: 796336776}
   - component: {fileID: 796336775}
   - component: {fileID: 796336779}
+  - component: {fileID: 796336777}
+  - component: {fileID: 796336776}
   m_Layer: 0
   m_Name: Mummy Zombie
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -54496,17 +54496,17 @@ GameObject:
   - component: {fileID: 543450653089181821}
   - component: {fileID: 619239320}
   - component: {fileID: 919132148565666506}
-  - component: {fileID: 919132148565666505}
-  - component: {fileID: 919132148565666504}
   - component: {fileID: 919132148565666507}
   - component: {fileID: 919132148565666508}
+  - component: {fileID: 919132148565666505}
+  - component: {fileID: 919132148565666504}
   m_Layer: 0
   m_Name: Claw Zombie
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &919132148565666504
 MonoBehaviour:
   m_ObjectHideFlags: 0

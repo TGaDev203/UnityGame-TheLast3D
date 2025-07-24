@@ -54,28 +54,4 @@ public class EnemyAIController : EnemyBase
         yield return base.WaitForAttackToFinish();
         enemyAnim.SetVelocity(1f);
     }
-
-    private void TryPlayVoice()
-    {
-        if (soundProfile != null && soundProfile.voiceSound != null)
-        {
-            SoundManager.Instance.PlayVoice(audioSource, soundProfile.voiceSound);
-        }
-    }
-
-    private void TryPlayChaseSound()
-    {
-        if (soundProfile != null)
-        {
-            SoundManager.Instance.PlayChaseSound(soundProfile.chaseSound);
-        }
-    }
-
-    private void TryStopChaseSound()
-    {
-        if (soundProfile != null)
-        {
-            SoundManager.Instance.StopChaseSound(soundProfile.chaseSound);
-        }
-    }
 }
