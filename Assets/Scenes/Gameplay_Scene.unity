@@ -10301,8 +10301,6 @@ MonoBehaviour:
   backgroundAudioSource: {fileID: 613355828}
   soundEffectAudioSource: {fileID: 613355827}
   beingHitSound: {fileID: 8300000, guid: 08f00e61fad378b44a4a4d5b0c3eab46, type: 3}
-  chrisWalkerVoiceAndChainSound: {fileID: 8300000, guid: d829b0ac4e918604ab485812368daf69, type: 3}
-  chrisWalkerChaseSound: {fileID: 8300000, guid: 21e05219271dc2140b327060ad336b3f, type: 3}
   closeDoorSound: {fileID: 8300000, guid: 35bb9d505b762894a964edaaf07b34d2, type: 3}
   closeChestSound: {fileID: 8300000, guid: 9c2af4c92db726e48ac0b74aef8ecba5, type: 3}
   gamePlaySound: {fileID: 8300000, guid: bbb19e2c8e7feab41850c50f54799a56, type: 3}
@@ -28697,6 +28695,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 532034ee1fe971c488e4c86c45cc0f1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  soundProfile: {fileID: 0}
   visionRange: 120
   viewAngle: 120
   attackRange: 2
@@ -33974,18 +33973,18 @@ GameObject:
   - component: {fileID: 1213367130}
   - component: {fileID: 1213367129}
   - component: {fileID: 1213367128}
-  - component: {fileID: 1213367127}
-  - component: {fileID: 1213367126}
   - component: {fileID: 1213367125}
   - component: {fileID: 1213367132}
   - component: {fileID: 1213367133}
+  - component: {fileID: 1213367134}
+  - component: {fileID: 1213367135}
   m_Layer: 7
   m_Name: Chris Walker
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!82 &1213367125
 AudioSource:
   m_ObjectHideFlags: 0
@@ -34083,40 +34082,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &1213367126
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1213367124}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5ef756c7bf15297499decc4cabb2f656, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1213367127
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1213367124}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 532034ee1fe971c488e4c86c45cc0f1e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  visionRange: 120
-  viewAngle: 120
-  attackRange: 2
-  eyeHeight: 1.7
-  memoryDuration: 3
-  patrolPoints:
-  - {fileID: 1450003849}
-  - {fileID: 495130917}
-  - {fileID: 685960594}
-  - {fileID: 266733977}
 --- !u!195 &1213367128
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -34252,6 +34217,41 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.056426685, y: 0.052803192, z: 0.043350216}
   m_Center: {x: -0.015837317, y: 0.47362113, z: 0.82747763}
+--- !u!114 &1213367134
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1213367124}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 532034ee1fe971c488e4c86c45cc0f1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundProfile: {fileID: 11400000, guid: f39c67cc0cdcd0948966f0df7093c560, type: 2}
+  visionRange: 120
+  viewAngle: 120
+  attackRange: 2
+  eyeHeight: 1.7
+  memoryDuration: 3
+  patrolPoints:
+  - {fileID: 1450003849}
+  - {fileID: 495130917}
+  - {fileID: 685960594}
+  - {fileID: 266733977}
+--- !u!114 &1213367135
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1213367124}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ef756c7bf15297499decc4cabb2f656, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1214626547
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -34488,8 +34488,8 @@ GameObject:
   - component: {fileID: 1230807327}
   - component: {fileID: 1230807326}
   - component: {fileID: 1230807325}
-  - component: {fileID: 1230807324}
   - component: {fileID: 1230807329}
+  - component: {fileID: 1230807330}
   m_Layer: 6
   m_Name: Player
   m_TagString: Player
@@ -34497,18 +34497,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1230807324
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1230807323}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2cf5d75d049adf449af980b7c23dcec4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1230807325
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -34627,6 +34615,18 @@ MonoBehaviour:
   crosshair: {fileID: 1894480660}
   fadeImage: {fileID: 1560754441}
   fadeDuration: 2
+--- !u!114 &1230807330
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1230807323}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2cf5d75d049adf449af980b7c23dcec4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &1233041422 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6123936285469627740, guid: 8d0657488806d1048b0e4a5613280826, type: 3}
@@ -54506,7 +54506,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &919132148565666504
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54531,6 +54531,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 532034ee1fe971c488e4c86c45cc0f1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  soundProfile: {fileID: 0}
   visionRange: 120
   viewAngle: 120
   attackRange: 2

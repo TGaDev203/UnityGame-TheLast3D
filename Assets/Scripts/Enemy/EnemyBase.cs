@@ -4,6 +4,8 @@ using System.Collections;
 
 public abstract class EnemyBase : MonoBehaviour
 {
+    [SerializeField] protected EnemySoundProfile soundProfile;
+
     [Header("General Settings")]
     [SerializeField] protected float visionRange;
     [SerializeField] protected float viewAngle;

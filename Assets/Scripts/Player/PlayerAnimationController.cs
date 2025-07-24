@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerAnimation : MonoBehaviour
+public class PlayerAnimationController : MonoBehaviour
 {
     private Animator playerAnimation;
 
@@ -15,16 +15,6 @@ public class PlayerAnimation : MonoBehaviour
 
         playerAnimation.SetFloat("VelocityX", direction.x);
         playerAnimation.SetFloat("VelocityY", direction.y);
-    }
-
-    public void PlayRunAnimation()
-    {
-        playerAnimation.SetBool("isRunning", true);
-    }
-
-    public void StopRunAnimation()
-    {
-        playerAnimation.SetBool("isRunning", false);
     }
 
     public void SetSpeedMultiplier(float value)

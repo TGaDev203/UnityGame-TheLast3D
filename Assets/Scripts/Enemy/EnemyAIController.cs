@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class ChrisWalkerAI : EnemyBase
+public class EnemyAIController : EnemyBase
 {
     protected override void Awake()
     {
@@ -11,7 +11,7 @@ public class ChrisWalkerAI : EnemyBase
     protected override void Start()
     {
         base.Start();
-        SoundManager.Instance.PlayChrisWalkerVoiceAndChainSound(audioSource);
+        TryPlayVoice();
         enemyAnim.SetVelocity(0.5f);
     }
 
@@ -19,7 +19,7 @@ public class ChrisWalkerAI : EnemyBase
     {
         base.HandleChase();
         enemyAnim.StopAttack();
-        SoundManager.Instance.PlayChrisWalkerChaseSound();
+        TryPlayChaseSound();
         currentVelocity = Mathf.Lerp(currentVelocity, 1f, Time.deltaTime * 5f);
         enemyAnim.SetVelocity(currentVelocity);
     }
@@ -28,7 +28,7 @@ public class ChrisWalkerAI : EnemyBase
     {
         base.HandlePatrol();
         enemyAnim.SetVelocity(0.5f);
-        SoundManager.Instance.StopChrisWalkerChaseSound();
+        TryStopChaseSound();
     }
 
     protected override IEnumerator PerformLookAround()
@@ -53,5 +53,29 @@ public class ChrisWalkerAI : EnemyBase
     {
         yield return base.WaitForAttackToFinish();
         enemyAnim.SetVelocity(1f);
+    }
+
+    private void TryPlayVoice()
+    {
+        if (soundProfile != null && soundProfile.voiceSound != null)
+        {
+            SoundManager.Instance.PlayVoice(audioSource, soundProfile.voiceSound);
+        }
+    }
+
+    private void TryPlayChaseSound()
+    {
+        if (soundProfile != null)
+        {
+            SoundManager.Instance.PlayChaseSound(soundProfile.chaseSound);
+        }
+    }
+
+    private void TryStopChaseSound()
+    {
+        if (soundProfile != null)
+        {
+            SoundManager.Instance.StopChaseSound(soundProfile.chaseSound);
+        }
     }
 }

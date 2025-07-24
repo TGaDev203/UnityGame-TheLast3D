@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class ChrisWalkerAnimation : MonoBehaviour, IEnemyAnimation
+public class EnemyAnimationController : MonoBehaviour, IEnemyAnimation
 {
     private Animator anim;
 

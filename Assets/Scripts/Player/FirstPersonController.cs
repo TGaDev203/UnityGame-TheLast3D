@@ -1,7 +1,4 @@
-using System;
 using System.Collections;
-using System.Runtime.CompilerServices;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -35,7 +32,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private bool isMoving = false;
         private bool isTurning = false;
         private CharacterController characterController;
-        private PlayerAnimation characterAnimation;
+        private PlayerAnimationController characterAnimation;
         private float bodyRotationY;
         private float bodyTurnSpeed = 150f;
         private float bobTimer = 0f;
@@ -59,7 +56,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private void Awake()
         {
             animator = GetComponent<Animator>();
-            characterAnimation = GetComponent<PlayerAnimation>();
+            characterAnimation = GetComponent<PlayerAnimationController>();
             playerHealth = GetComponent<PlayerHealth>();
         }
 
@@ -167,7 +164,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
                             Debug.Log("Stopped tracking left finger");
                             input = Vector2.zero;
                             characterAnimation.SetDirection(Vector2.zero);
-                            characterAnimation.StopRunAnimation();
+                            characterAnimation.SetIsRunning(false);
                         }
                         else if (touch.fingerId == rightFingerId)
                         {
