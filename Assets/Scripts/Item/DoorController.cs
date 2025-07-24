@@ -1,10 +1,13 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class DoorController : MonoBehaviour
 {
-    [Header("Door Settings")]
+    [SerializeField] private NavMeshObstacle navObstacle;
     [SerializeField] private Transform doorLeaf;
+    
+    [Header("Door Settings")]
     [SerializeField] private float openAngle = 90f;
     [SerializeField] private float closeAngle = 0f;
     [SerializeField] private float openDuration = 1f;
@@ -12,7 +15,11 @@ public class DoorController : MonoBehaviour
 
     private bool isOpen = false;
     private Coroutine rotateRoutine;
-
+    private void Awake()
+    {
+        if (doorLeaf != null && navObstacle == null)
+            navObstacle = doorLeaf.GetComponent<NavMeshObstacle>();
+    }
     public void ToggleDoor()
     {
         if (CompareTag("Locked"))
@@ -30,7 +37,8 @@ public class DoorController : MonoBehaviour
             StopCoroutine(rotateRoutine);
 
         rotateRoutine = StartCoroutine(RotateDoor(targetAngle, openDuration));
-
+        if (navObstacle != null)
+            navObstacle.enabled = !isOpen; // mở cửa thì tắt obstacle, đóng thì bật lại
         if (isOpen)
             SoundManager.Instance?.PlayOpenDoorSound();
         else

@@ -143,6 +143,21 @@ public abstract class EnemyBase : MonoBehaviour
         {
             AttackPlayer();
         }
+
+        DoorController door = other.GetComponentInParent<DoorController>();
+        if (door != null && !door.IsOpen)
+        {
+            StartCoroutine(HandleDoorInteraction(door));
+        }
+    }
+
+    protected virtual IEnumerator HandleDoorInteraction(DoorController door)
+    {
+        agent.isStopped = true;
+
+        door.ToggleDoor();
+        yield return new WaitForSeconds(1f);
+        agent.isStopped = false;
     }
 
     protected virtual void OnTriggerExit(Collider other)

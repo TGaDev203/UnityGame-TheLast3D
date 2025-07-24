@@ -335,22 +335,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 originalCameraLocalPos + new Vector3(xOffset, yOffset, 0);
         }
 
-        public void OpenDoor()
-        {
-            if (isPlayerNearby && detectedDoor != null && canToggleDoor)
-            {
-                detectedDoor.ToggleDoor();
-                SwitchPadlock();
-                StartCoroutine(DoorToggleCooldown());
-            }
-        }
-
-        private IEnumerator DoorToggleCooldown()
-        {
-            canToggleDoor = false;
-            yield return new WaitForSeconds(doorToggleCooldown);
-            canToggleDoor = true;
-        }
         private void CheckForInteractables()
         {
             Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
@@ -385,6 +369,22 @@ namespace UnityStandardAssets.Characters.FirstPerson
             lockButton_Opened?.gameObject.SetActive(false);
         }
 
+        public void OpenDoor()
+        {
+            if (isPlayerNearby && detectedDoor != null && canToggleDoor)
+            {
+                detectedDoor.ToggleDoor();
+                SwitchPadlock();
+                StartCoroutine(DoorToggleCooldown());
+            }
+        }
+
+        private IEnumerator DoorToggleCooldown()
+        {
+            canToggleDoor = false;
+            yield return new WaitForSeconds(doorToggleCooldown);
+            canToggleDoor = true;
+        }
 
         private void SwitchPadlock()
         {
