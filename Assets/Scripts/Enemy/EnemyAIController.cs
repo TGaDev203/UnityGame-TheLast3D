@@ -34,9 +34,9 @@ public class EnemyAIController : EnemyBase
     protected override IEnumerator PerformLookAround()
     {
         enemyAnim.SetVelocity(0f);
-        enemyAnim.PlayLookAround();
+        enemyAnim.PerformPauseAction(true);
         yield return base.PerformLookAround();
-        enemyAnim.StopLookAround();
+        enemyAnim.PerformPauseAction(false);
         enemyAnim.SetVelocity(0.5f);
     }
 
@@ -45,7 +45,7 @@ public class EnemyAIController : EnemyBase
         base.AttackPlayer();
         Debug.Log("Chris Walker attacks!");
         enemyAnim.SetVelocity(0f);
-        enemyAnim.StopLookAround();
+        enemyAnim.PerformPauseAction(false);
         enemyAnim.PlayAttack();
     }
 

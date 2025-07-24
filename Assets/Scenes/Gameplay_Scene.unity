@@ -28695,7 +28695,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 532034ee1fe971c488e4c86c45cc0f1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soundProfile: {fileID: 0}
+  soundProfile: {fileID: 11400000, guid: 2ce8caa71ba9aa74da2bc030f9adf662, type: 2}
   visionRange: 120
   viewAngle: 120
   attackRange: 2
@@ -54531,7 +54531,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 532034ee1fe971c488e4c86c45cc0f1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soundProfile: {fileID: 0}
+  soundProfile: {fileID: 11400000, guid: 984f4ea7e1334dc4484db0acb43a74b7, type: 2}
   visionRange: 120
   viewAngle: 120
   attackRange: 2
