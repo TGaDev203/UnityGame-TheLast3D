@@ -151,11 +151,11 @@ public class PlayerHealth : MonoBehaviour
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
         foreach (GameObject enemy in enemies)
         {
-            IEnemyAnimation anim = enemy.GetComponent<IEnemyAnimation>();
+            EnemyAnimationController anim = enemy.GetComponent<EnemyAnimationController>();
             if (anim != null)
             {
                 anim.StopAttack();
-                anim.StopLookAround();
+                anim.PerformPauseAction(false);
                 anim.SetVelocity(0f);
             }
         }

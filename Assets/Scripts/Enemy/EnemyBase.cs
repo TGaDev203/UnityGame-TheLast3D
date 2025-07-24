@@ -4,19 +4,24 @@ using System.Collections;
 
 public abstract class EnemyBase : MonoBehaviour
 {
+    [SerializeField] protected EnemySoundProfile soundProfile;
+
     [Header("General Settings")]
+    [SerializeField] protected float attackRange;
+    [SerializeField] protected float enemyWalkSpeed;
+    [SerializeField] protected float enemyRunSpeed;
+    [SerializeField] protected float eyeHeight;
+    [SerializeField] protected float memoryDuration;
+    [SerializeField] protected float pauseActionTime;
     [SerializeField] protected float visionRange;
     [SerializeField] protected float viewAngle;
-    [SerializeField] protected float attackRange;
-    [SerializeField] protected float eyeHeight;
-    [SerializeField] protected float memoryDuration = 3f;
     [SerializeField] protected Transform[] patrolPoints;
     protected bool isLookingAround = false;
     protected bool isAttacking = false;
     protected float currentVelocity = 0f;
-    protected float lookTimer = 0f;
     protected float memoryTimer = 0f;
-    protected float nextLookTime = 0f;
+    protected float nextPauseActionTime = 0f;
+    protected float timeSinceLastPauseAction = 0f;
     protected AudioSource audioSource;
     protected int currentPointIndex = 0;
     protected IEnemyAnimation enemyAnim;
@@ -38,7 +43,7 @@ public abstract class EnemyBase : MonoBehaviour
     protected virtual void Start()
     {
         GoToNextPatrolPoint();
-        nextLookTime = Random.Range(5f, 10f);
+        nextPauseActionTime = Random.Range(5f, 10f);
     }
 
     protected virtual void Update()
@@ -65,21 +70,21 @@ public abstract class EnemyBase : MonoBehaviour
         }
         else if (!agent.pathPending && agent.remainingDistance < 0.5f)
         {
-            HandlePatrol();
+            GoToNextPatrolPoint();
         }
         else if (agent.velocity.magnitude > 0.1f && !isLookingAround)
         {
-            lookTimer += Time.deltaTime;
-            if (lookTimer >= nextLookTime)
+            timeSinceLastPauseAction += Time.deltaTime;
+            if (timeSinceLastPauseAction >= nextPauseActionTime)
             {
-                StartCoroutine(PerformLookAround());
+                StartCoroutine(PerformPauseAction());
             }
         }
     }
 
     protected virtual void HandleChase()
     {
-        agent.speed = 25f;
+        agent.speed = enemyRunSpeed;
 
         if (!agent.pathPending && !isAttacking)
         {
@@ -88,28 +93,24 @@ public abstract class EnemyBase : MonoBehaviour
         }
     }
 
-    protected virtual void HandlePatrol()
-    {
-        agent.speed = 5f;
-        GoToNextPatrolPoint();
-    }
-
     protected virtual void GoToNextPatrolPoint()
     {
         if (patrolPoints.Length == 0) return;
+
+        agent.speed = enemyWalkSpeed;
         agent.destination = patrolPoints[currentPointIndex].position;
         currentPointIndex = (currentPointIndex + 1) % patrolPoints.Length;
     }
 
-    protected virtual IEnumerator PerformLookAround()
+    protected virtual IEnumerator PerformPauseAction()
     {
         isLookingAround = true;
-        lookTimer = 5f;
-        nextLookTime = Random.Range(10f, 20f);
+        timeSinceLastPauseAction = 5f;
+        nextPauseActionTime = Random.Range(10f, 20f);
 
         agent.isStopped = true;
 
-        yield return new WaitForSeconds(Random.Range(2f, 4f));
+        yield return new WaitForSeconds(pauseActionTime);
 
         agent.isStopped = false;
         isLookingAround = false;
@@ -164,5 +165,29 @@ public abstract class EnemyBase : MonoBehaviour
         yield return new WaitForSeconds(0.8f);
         isAttacking = false;
         agent.isStopped = false;
+    }
+
+    protected void TryPlayVoice()
+    {
+        if (soundProfile != null && soundProfile.voiceSound != null)
+        {
+            SoundManager.Instance.PlayVoice(audioSource, soundProfile.voiceSound);
+        }
+    }
+
+    protected void TryPlayChaseSound()
+    {
+        if (soundProfile != null)
+        {
+            SoundManager.Instance.PlayChaseSound(soundProfile.chaseSound);
+        }
+    }
+
+    protected void TryStopChaseSound()
+    {
+        if (soundProfile != null)
+        {
+            SoundManager.Instance.StopChaseSound(soundProfile.chaseSound);
+        }
     }
 }

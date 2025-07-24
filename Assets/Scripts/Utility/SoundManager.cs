@@ -8,8 +8,6 @@ public class SoundManager : MonoBehaviour
     [SerializeField] public AudioSource backgroundAudioSource;
     [SerializeField] public AudioSource soundEffectAudioSource;
     [SerializeField] private AudioClip beingHitSound;
-    [SerializeField] private AudioClip chrisWalkerVoiceAndChainSound;
-    [SerializeField] private AudioClip chrisWalkerChaseSound;
     [SerializeField] private AudioClip closeDoorSound;
     [SerializeField] private AudioClip closeChestSound;
     [SerializeField] private AudioClip gamePlaySound;
@@ -69,33 +67,35 @@ public class SoundManager : MonoBehaviour
         }
     }
 
-    public void PlayChrisWalkerVoiceAndChainSound(AudioSource chrisWalkerAudioSource)
+    public void PlayChaseSound(AudioClip clip)
     {
-        if (chrisWalkerVoiceAndChainSound != null)
-        {
-            chrisWalkerAudioSource.loop = true;
-            chrisWalkerAudioSource.clip = chrisWalkerVoiceAndChainSound;
-            chrisWalkerAudioSource.Play();
-        }
-    }
+        if (clip == null) return;
 
-    public void PlayChrisWalkerChaseSound()
-    {
-        if (soundEffectAudioSource.clip == chrisWalkerChaseSound && soundEffectAudioSource.isPlaying) return;
+        if (soundEffectAudioSource.clip == clip && soundEffectAudioSource.isPlaying) return;
 
         soundEffectAudioSource.loop = true;
-        soundEffectAudioSource.clip = chrisWalkerChaseSound;
+        soundEffectAudioSource.clip = clip;
         soundEffectAudioSource.Play();
     }
 
-    public void StopChrisWalkerChaseSound()
+    public void StopChaseSound(AudioClip clip)
     {
-        if (soundEffectAudioSource.clip == chrisWalkerChaseSound && soundEffectAudioSource.isPlaying)
+        if (clip == null) return;
+
+        if (soundEffectAudioSource.clip == clip && soundEffectAudioSource.isPlaying)
         {
             soundEffectAudioSource.loop = false;
-            soundEffectAudioSource.clip = chrisWalkerChaseSound;
             soundEffectAudioSource.Stop();
         }
+    }
+
+    public void PlayVoice(AudioSource source, AudioClip clip)
+    {
+        if (clip == null || source == null) return;
+
+        source.loop = true;
+        source.clip = clip;
+        source.Play();
     }
 
     public void PlaySound(AudioClip clip)

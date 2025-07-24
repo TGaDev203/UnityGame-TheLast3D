@@ -3,9 +3,11 @@ using UnityEngine;
 
 public class DoorController : MonoBehaviour
 {
+    [Header("Door Settings")]
     [SerializeField] private Transform doorLeaf;
-    [SerializeField] private float openAngle;
-    [SerializeField] private float openDuration;
+    [SerializeField] private float openAngle = 90f;
+    [SerializeField] private float closeAngle = 0f;
+    [SerializeField] private float openDuration = 1f;
     [SerializeField] private bool invertRotation = false;
 
     private bool isOpen = false;
@@ -21,13 +23,13 @@ public class DoorController : MonoBehaviour
 
         isOpen = !isOpen;
 
-        float angle = isOpen ? openAngle : 0f;
-        if (invertRotation) angle *= -1;
+        float targetAngle = isOpen ? openAngle : closeAngle;
+        if (invertRotation) targetAngle *= -1;
 
         if (rotateRoutine != null)
             StopCoroutine(rotateRoutine);
 
-        rotateRoutine = StartCoroutine(RotateDoor(angle, openDuration));
+        rotateRoutine = StartCoroutine(RotateDoor(targetAngle, openDuration));
 
         if (isOpen)
             SoundManager.Instance?.PlayOpenDoorSound();
