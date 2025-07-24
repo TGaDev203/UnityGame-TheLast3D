@@ -28701,6 +28701,7 @@ MonoBehaviour:
   attackRange: 2
   eyeHeight: 1.5
   memoryDuration: 3
+  pauseActionTime: 2.2
   patrolPoints:
   - {fileID: 1450003849}
   - {fileID: 495130917}
@@ -34235,6 +34236,7 @@ MonoBehaviour:
   attackRange: 2
   eyeHeight: 1.7
   memoryDuration: 3
+  pauseActionTime: 3.3
   patrolPoints:
   - {fileID: 1450003849}
   - {fileID: 495130917}
@@ -54506,7 +54508,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &919132148565666504
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54537,6 +54539,7 @@ MonoBehaviour:
   attackRange: 2
   eyeHeight: 1.5
   memoryDuration: 3
+  pauseActionTime: 14.2
   patrolPoints:
   - {fileID: 1450003849}
   - {fileID: 495130917}

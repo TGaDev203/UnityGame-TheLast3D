@@ -12,13 +12,14 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField] protected float attackRange;
     [SerializeField] protected float eyeHeight;
     [SerializeField] protected float memoryDuration = 3f;
+    [SerializeField] protected float pauseActionTime;
     [SerializeField] protected Transform[] patrolPoints;
     protected bool isLookingAround = false;
     protected bool isAttacking = false;
     protected float currentVelocity = 0f;
-    protected float lookTimer = 0f;
     protected float memoryTimer = 0f;
-    protected float nextLookTime = 0f;
+    protected float nextPauseActionTime = 0f;
+    protected float timeSinceLastPauseAction  = 0f;
     protected AudioSource audioSource;
     protected int currentPointIndex = 0;
     protected IEnemyAnimation enemyAnim;
@@ -40,7 +41,7 @@ public abstract class EnemyBase : MonoBehaviour
     protected virtual void Start()
     {
         GoToNextPatrolPoint();
-        nextLookTime = Random.Range(5f, 10f);
+        nextPauseActionTime = Random.Range(5f, 10f);
     }
 
     protected virtual void Update()
@@ -71,10 +72,10 @@ public abstract class EnemyBase : MonoBehaviour
         }
         else if (agent.velocity.magnitude > 0.1f && !isLookingAround)
         {
-            lookTimer += Time.deltaTime;
-            if (lookTimer >= nextLookTime)
+            timeSinceLastPauseAction += Time.deltaTime;
+            if (timeSinceLastPauseAction >= nextPauseActionTime)
             {
-                StartCoroutine(PerformLookAround());
+                StartCoroutine(PerformPauseAction());
             }
         }
     }
@@ -103,15 +104,15 @@ public abstract class EnemyBase : MonoBehaviour
         currentPointIndex = (currentPointIndex + 1) % patrolPoints.Length;
     }
 
-    protected virtual IEnumerator PerformLookAround()
+    protected virtual IEnumerator PerformPauseAction()
     {
         isLookingAround = true;
-        lookTimer = 5f;
-        nextLookTime = Random.Range(10f, 20f);
+        timeSinceLastPauseAction = 5f;
+        nextPauseActionTime = Random.Range(10f, 20f);
 
         agent.isStopped = true;
 
-        yield return new WaitForSeconds(Random.Range(2f, 4f));
+        yield return new WaitForSeconds(pauseActionTime);
 
         agent.isStopped = false;
         isLookingAround = false;
@@ -168,7 +169,7 @@ public abstract class EnemyBase : MonoBehaviour
         agent.isStopped = false;
     }
 
-        protected void TryPlayVoice()
+    protected void TryPlayVoice()
     {
         if (soundProfile != null && soundProfile.voiceSound != null)
         {

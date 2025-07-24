@@ -31,11 +31,11 @@ public class EnemyAIController : EnemyBase
         TryStopChaseSound();
     }
 
-    protected override IEnumerator PerformLookAround()
+    protected override IEnumerator PerformPauseAction()
     {
         enemyAnim.SetVelocity(0f);
         enemyAnim.PerformPauseAction(true);
-        yield return base.PerformLookAround();
+        yield return base.PerformPauseAction();
         enemyAnim.PerformPauseAction(false);
         enemyAnim.SetVelocity(0.5f);
     }
