@@ -7,19 +7,21 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField] protected EnemySoundProfile soundProfile;
 
     [Header("General Settings")]
+    [SerializeField] protected float attackRange;
+    [SerializeField] protected float enemyWalkSpeed;
+    [SerializeField] protected float enemyRunSpeed;
+    [SerializeField] protected float eyeHeight;
+    [SerializeField] protected float memoryDuration;
+    [SerializeField] protected float pauseActionTime;
     [SerializeField] protected float visionRange;
     [SerializeField] protected float viewAngle;
-    [SerializeField] protected float attackRange;
-    [SerializeField] protected float eyeHeight;
-    [SerializeField] protected float memoryDuration = 3f;
-    [SerializeField] protected float pauseActionTime;
     [SerializeField] protected Transform[] patrolPoints;
     protected bool isLookingAround = false;
     protected bool isAttacking = false;
     protected float currentVelocity = 0f;
     protected float memoryTimer = 0f;
     protected float nextPauseActionTime = 0f;
-    protected float timeSinceLastPauseAction  = 0f;
+    protected float timeSinceLastPauseAction = 0f;
     protected AudioSource audioSource;
     protected int currentPointIndex = 0;
     protected IEnemyAnimation enemyAnim;
@@ -68,7 +70,7 @@ public abstract class EnemyBase : MonoBehaviour
         }
         else if (!agent.pathPending && agent.remainingDistance < 0.5f)
         {
-            HandlePatrol();
+            GoToNextPatrolPoint();
         }
         else if (agent.velocity.magnitude > 0.1f && !isLookingAround)
         {
@@ -82,7 +84,7 @@ public abstract class EnemyBase : MonoBehaviour
 
     protected virtual void HandleChase()
     {
-        agent.speed = 25f;
+        agent.speed = enemyRunSpeed;
 
         if (!agent.pathPending && !isAttacking)
         {
@@ -91,15 +93,11 @@ public abstract class EnemyBase : MonoBehaviour
         }
     }
 
-    protected virtual void HandlePatrol()
-    {
-        agent.speed = 5f;
-        GoToNextPatrolPoint();
-    }
-
     protected virtual void GoToNextPatrolPoint()
     {
         if (patrolPoints.Length == 0) return;
+
+        agent.speed = enemyWalkSpeed;
         agent.destination = patrolPoints[currentPointIndex].position;
         currentPointIndex = (currentPointIndex + 1) % patrolPoints.Length;
     }

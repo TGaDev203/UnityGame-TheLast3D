@@ -24,9 +24,9 @@ public class EnemyAIController : EnemyBase
         enemyAnim.SetVelocity(currentVelocity);
     }
 
-    protected override void HandlePatrol()
+    protected override void GoToNextPatrolPoint()
     {
-        base.HandlePatrol();
+        base.GoToNextPatrolPoint();
         enemyAnim.SetVelocity(0.5f);
         TryStopChaseSound();
     }

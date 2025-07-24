@@ -28696,12 +28696,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   soundProfile: {fileID: 11400000, guid: 2ce8caa71ba9aa74da2bc030f9adf662, type: 2}
-  visionRange: 120
-  viewAngle: 120
   attackRange: 2
+  enemyWalkSpeed: 2
+  enemyRunSpeed: 20
   eyeHeight: 1.5
   memoryDuration: 3
   pauseActionTime: 2.2
+  visionRange: 120
+  viewAngle: 120
   patrolPoints:
   - {fileID: 1450003849}
   - {fileID: 495130917}
@@ -34231,12 +34233,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   soundProfile: {fileID: 11400000, guid: f39c67cc0cdcd0948966f0df7093c560, type: 2}
-  visionRange: 120
-  viewAngle: 120
   attackRange: 2
+  enemyWalkSpeed: 5
+  enemyRunSpeed: 20
   eyeHeight: 1.7
   memoryDuration: 3
   pauseActionTime: 3.3
+  visionRange: 120
+  viewAngle: 120
   patrolPoints:
   - {fileID: 1450003849}
   - {fileID: 495130917}
@@ -34586,7 +34590,7 @@ Transform:
   m_GameObject: {fileID: 1230807323}
   serializedVersion: 2
   m_LocalRotation: {x: 0.50000006, y: -0.49999997, z: -0.50000006, w: 0.49999997}
-  m_LocalPosition: {x: 0.0057, y: -0.04086, z: -0.0037}
+  m_LocalPosition: {x: 0.21729, y: -0.06683, z: -0.0037}
   m_LocalScale: {x: 0.007500003, y: 0.007500002, z: 0.0075000008}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -54508,7 +54512,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &919132148565666504
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54534,12 +54538,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   soundProfile: {fileID: 11400000, guid: 984f4ea7e1334dc4484db0acb43a74b7, type: 2}
-  visionRange: 120
-  viewAngle: 120
   attackRange: 2
+  enemyWalkSpeed: 5
+  enemyRunSpeed: 20
   eyeHeight: 1.5
   memoryDuration: 3
   pauseActionTime: 14.2
+  visionRange: 120
+  viewAngle: 120
   patrolPoints:
   - {fileID: 1450003849}
   - {fileID: 495130917}
