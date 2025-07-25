@@ -10,13 +10,15 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private AudioClip beingHitSound;
     [SerializeField] private AudioClip closeDoorSound;
     [SerializeField] private AudioClip closeChestSound;
+    [SerializeField] private AudioClip dieSound;
     [SerializeField] private AudioClip gamePlaySound;
+    [SerializeField] private AudioClip jumpSound;
     [SerializeField] private AudioClip knockDoorSound;
     [SerializeField] private AudioClip lockedSound;
+    [SerializeField] private AudioClip landSound;
     [SerializeField] private AudioClip mainMenuSound;
     [SerializeField] private AudioClip openDoorSound;
     [SerializeField] private AudioClip openChestSound;
-    [SerializeField] private AudioClip playerDeath;
     [SerializeField] private AudioClip[] footStepSounds;
     [SerializeField] private float footstepInterval;
     private float footstepTimer;
@@ -28,7 +30,9 @@ public class SoundManager : MonoBehaviour
     public void PlayCloseChestSound() => PlaySound(closeChestSound);
     public void PlayLockedSound() => PlaySound(lockedSound);
     public void PlayBeingHitSound() => PlaySound(beingHitSound);
-    public void PlayPlayerDeathSound() => PlaySound(playerDeath);
+    public void PlayJumpSound() => PlaySound(jumpSound);
+    public void PlayLandSound() => PlaySound(landSound);
+    public void PlayDieSound() => PlaySound(dieSound);
 
     private void Awake()
     {

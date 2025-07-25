@@ -7397,10 +7397,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 437426023}
+  - component: {fileID: 437426024}
   m_Layer: 0
   m_Name: Ground Check Point
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: 7422848464349959988, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -7413,12 +7414,33 @@ Transform:
   m_GameObject: {fileID: 437426022}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -9.364109, y: -0.0225, z: 3.6002991}
+  m_LocalPosition: {x: -0.002, y: -0.022, z: -0.0539}
   m_LocalScale: {x: 0.16666663, y: 0.16666664, z: 0.16666663}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1230807328}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &437426024
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 437426022}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!4 &440799356 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 141335912778833025, guid: 82be982638cbf5d488973eaecd4b2435, type: 3}
@@ -10448,13 +10470,15 @@ MonoBehaviour:
   beingHitSound: {fileID: 8300000, guid: 08f00e61fad378b44a4a4d5b0c3eab46, type: 3}
   closeDoorSound: {fileID: 8300000, guid: 35bb9d505b762894a964edaaf07b34d2, type: 3}
   closeChestSound: {fileID: 8300000, guid: 9c2af4c92db726e48ac0b74aef8ecba5, type: 3}
+  dieSound: {fileID: 8300000, guid: 75b7a73a8c54a3747b1006a5041d2cb2, type: 3}
   gamePlaySound: {fileID: 8300000, guid: bbb19e2c8e7feab41850c50f54799a56, type: 3}
+  jumpSound: {fileID: 8300000, guid: 013c25010ea5eb444bfd66ca78e8c207, type: 3}
   knockDoorSound: {fileID: 8300000, guid: a0639a9bbc34a61449e3d89f96192809, type: 3}
   lockedSound: {fileID: 8300000, guid: 660e9610f20cc0d47b92c2448fa68c4e, type: 3}
+  landSound: {fileID: 8300000, guid: f9ff9bd447f9d7941b13185fa4ed645d, type: 3}
   mainMenuSound: {fileID: 8300000, guid: b73b693a82aac37418e855d1053b7c50, type: 3}
   openDoorSound: {fileID: 8300000, guid: f36c16c367f0c13488d86070a7d929a1, type: 3}
   openChestSound: {fileID: 8300000, guid: 4a6d28b2525676d48a413b8550c6c0a0, type: 3}
-  playerDeath: {fileID: 8300000, guid: 75b7a73a8c54a3747b1006a5041d2cb2, type: 3}
   footStepSounds:
   - {fileID: 8300000, guid: 1503958e67964af45af213c1a1827d65, type: 3}
   - {fileID: 8300000, guid: fe3fb6edd21867748ac1266e6c76c580, type: 3}
@@ -34753,12 +34777,12 @@ MonoBehaviour:
   fallMultiplier: 4
   groundCheckRadius: 0.2
   gravity: -20
-  idleBobAmount: 0.01
-  idleBobSpeed: 1
+  idleBobAmount: 0.03
+  idleBobSpeed: 1.2
   jumpForce: 15
   moveInputDeadZone: 20
-  runBobAmount: 0
-  runBobSpeed: 0
+  runBobAmount: 0.03
+  runBobSpeed: 15
   runSpeed: 25
   smoothTime: 0.05
   swipeSpeedThreshold: 0.5
@@ -42947,6 +42971,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6150611011213926063, guid: 174ee7a32aa7843478333a20d0889da1, type: 3}
+      propertyPath: m_TagString
+      value: Standable
+      objectReference: {fileID: 0}
+    - target: {fileID: 6150611011213926063, guid: 174ee7a32aa7843478333a20d0889da1, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
@@ -42957,6 +42985,18 @@ PrefabInstance:
     - target: {fileID: 7213447876433764460, guid: 174ee7a32aa7843478333a20d0889da1, type: 3}
       propertyPath: m_Center.y
       value: 0.0063239015
+      objectReference: {fileID: 0}
+    - target: {fileID: 7213447876433764460, guid: 174ee7a32aa7843478333a20d0889da1, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7213447876433764460, guid: 174ee7a32aa7843478333a20d0889da1, type: 3}
+      propertyPath: m_ProvidesContacts
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7840224535415489615, guid: 174ee7a32aa7843478333a20d0889da1, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
       objectReference: {fileID: 0}
     - target: {fileID: 7840224535415489615, guid: 174ee7a32aa7843478333a20d0889da1, type: 3}
       propertyPath: m_StaticEditorFlags

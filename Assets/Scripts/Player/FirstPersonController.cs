@@ -34,11 +34,14 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private bool canLookAround = true;
         private bool canToggleDoor = true;
         private bool canToggleChest = true;
+        private bool hasStarted = false;
         private bool isPlayerNearby = false;
         private bool isTurning = false;
         private bool isMoving = false;
         private bool isJumping = false;
-        private bool wasGroundedLastFrame;
+        private bool isRunning = false;
+        private bool wasGrounded = false;
+        private bool wasGroundedLastFrame = false;
         private CharacterController characterController;
         private PlayerAnimationController playerAnim;
         private float bodyRotationY;
@@ -63,6 +66,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private int leftFingerId, rightFingerId;
         private int turnLayerIndex;
         private PlayerHealth playerHealth;
+
+        public void DisableLookAround() => canLookAround = false;
+        private void TriggerTurnRight() => StartCoroutine(PerformTurn("turnRight"));
+        private void TriggerTurnLeft() => StartCoroutine(PerformTurn("turnLeft"));
+        private bool IsGrounded() => Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayer);
 
         private void Awake()
         {
@@ -113,6 +121,13 @@ namespace UnityStandardAssets.Characters.FirstPerson
         {
             GetTouchInput();
 
+            bool isGrounded = IsGrounded();
+            if (hasStarted && !wasGrounded && isGrounded)
+            {
+                SoundManager.Instance.PlayLandSound();
+            }
+
+            wasGrounded = isGrounded;
             if (rightFingerId != -1 && canLookAround)
             {
                 LookAround();
@@ -149,7 +164,10 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
             characterController.Move(totalMovement.sqrMagnitude > 0.0001f ? totalMovement : Vector3.zero);
 
+            CheckGroundTag();
             HandleLandingState();
+
+            hasStarted = true;
         }
 
         private void GetTouchInput()
@@ -166,7 +184,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
                         if (touch.position.x < halfScreenWidth && leftFingerId == -1)
                         {
                             leftFingerId = touch.fingerId;
-                            Debug.Log("Tracking left finger");
+                            // #if UNITY_EDITOR
+                            // Debug.Log("Tracking left finger");
+                            // #endif
                             moveTouchStartPosition = touch.position;
                         }
                         else if (touch.position.x > halfScreenWidth && rightFingerId == -1)
@@ -187,7 +207,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
                                 lastTapTime = Time.time;
                             }
 
-                            Debug.Log("Synced yaw rotation: " + yaw);
+                            // Debug.Log("Synced yaw rotation: " + yaw);
                         }
 
                         break;
@@ -199,7 +219,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
                         {
                             // Stop tracking the left finger
                             leftFingerId = -1;
-                            Debug.Log("Stopped tracking left finger");
+                            // Debug.Log("Stopped tracking left finger");
                             input = Vector2.zero;
                             playerAnim.SetDirection(Vector2.zero);
                             playerAnim.SetIsRunning(false);
@@ -208,7 +228,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
                         {
                             // Stop tracking the right finger
                             rightFingerId = -1;
-                            Debug.Log("Stop tracking right finger");
+                            // Debug.Log("Stop tracking right finger");
                         }
 
                         break;
@@ -242,48 +262,59 @@ namespace UnityStandardAssets.Characters.FirstPerson
         {
             if (playerHealth.IsDead || input.sqrMagnitude <= moveInputDeadZone)
             {
+                playerAnim.SetIsRunning(false);
                 return Vector3.zero;
             }
 
             isMoving = true;
 
             Vector2 movementInput = input.normalized;
-            playerAnim.SetDirection(movementInput);
+            isRunning = input.magnitude > 400f;
 
-            float inputMagnitude = input.magnitude;
-            bool isRunning = inputMagnitude > 400f;
+            playerAnim.SetDirection(movementInput);
 
             bool isMovingStraightForward = isRunning &&
                                             movementInput.y > 0.7f &&
                                             Mathf.Abs(movementInput.x) < 0.3f;
 
-            bool canRun = !isJumping;
+            float moveSpeed = isRunning ? runSpeed : walkSpeed;
 
-            if (canRun)
+            if (isJumping)
             {
-                playerAnim.SetIsRunning(isMovingStraightForward);
-            }
-            else
-            {
+                moveSpeed *= 0.9f;
                 playerAnim.SetIsRunning(false);
             }
-
-            if (!isMovingStraightForward)
-            {
-                float speedMultiplier = isRunning ? 1.5f : 1f;
-                playerAnim.SetSpeedMultiplier(speedMultiplier);
-            }
             else
             {
-                playerAnim.SetSpeedMultiplier(1f);
+                bool shouldRun = isMovingStraightForward;
+                playerAnim.SetIsRunning(shouldRun);
+
+                float speedMultiplier = 1f;
+                if (!shouldRun && isRunning)
+                    speedMultiplier = 1.5f;
+
+                playerAnim.SetSpeedMultiplier(speedMultiplier);
             }
 
-            float moveSpeed = isRunning ? runSpeed : walkSpeed;
             Vector2 movementDirection = movementInput * moveSpeed * Time.deltaTime;
-
-            SoundManager.Instance.PlayFootStepSounds(isRunning);
+            SoundManager.Instance.PlayFootStepSounds(isRunning && !isJumping);
 
             return transform.right * movementDirection.x + transform.forward * movementDirection.y;
+        }
+
+        private IEnumerator PerformTurn(string triggerName)
+        {
+            isTurning = true;
+            animator.SetLayerWeight(turnLayerIndex, 1);
+            animator.SetTrigger(triggerName);
+
+            yield return new WaitForSeconds(0.5f);
+
+            animator.SetLayerWeight(turnLayerIndex, 0);
+
+            bodyRotationY = currentRotation.x;
+
+            isTurning = false;
         }
 
         private void Jump()
@@ -307,9 +338,44 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 }
 
                 playerAnim.SetJumpType(jumpType);
+                SoundManager.Instance.PlayJumpSound();
 
-                Debug.Log("Jump triggered! Type: " + jumpType);
+                // Debug.Log("Jump triggered! Type: " + jumpType);
             }
+        }
+
+        private string CheckGroundTag()
+        {
+            BoxCollider box = groundCheck.GetComponent<BoxCollider>();
+            if (box == null)
+            {
+                // Debug.LogWarning("GroundCheck doesn't have a BoxCollider!");
+                return null;
+            }
+
+            Vector3 boxCenter = groundCheck.position + box.center;
+            Vector3 boxSize = Vector3.Scale(box.size, groundCheck.lossyScale);
+
+            Collider[] hits = Physics.OverlapBox(boxCenter, boxSize / 2, groundCheck.rotation);
+
+            bool foundStandable = false;
+
+            foreach (var hit in hits)
+            {
+                if (hit.gameObject != gameObject)
+                {
+                    // Debug.Log($"Ground tag: {hit.tag}");
+
+                    if (hit.CompareTag("Standable"))
+                    {
+                        foundStandable = true;
+                        playerAnim.SetJumpType(0);
+                        break;
+                    }
+                }
+            }
+
+            return foundStandable ? "Standable" : null;
         }
 
         private void HandleLandingState()
@@ -320,7 +386,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             {
                 isJumping = false;
                 playerAnim.SetJumpType(0);
-                Debug.Log("Landed!");
+                // Debug.Log("Landed!");
             }
 
             if (!isGroundedNow)
@@ -329,36 +395,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
 
             wasGroundedLastFrame = isGroundedNow;
-        }
-
-        private bool IsGrounded()
-        {
-            return Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayer);
-        }
-
-        private void TriggerTurnLeft()
-        {
-            StartCoroutine(PerformTurn("turnLeft"));
-        }
-
-        private void TriggerTurnRight()
-        {
-            StartCoroutine(PerformTurn("turnRight"));
-        }
-
-        private IEnumerator PerformTurn(string triggerName)
-        {
-            isTurning = true;
-            animator.SetLayerWeight(turnLayerIndex, 1);
-            animator.SetTrigger(triggerName);
-
-            yield return new WaitForSeconds(0.5f);
-
-            animator.SetLayerWeight(turnLayerIndex, 0);
-
-            bodyRotationY = currentRotation.x;
-
-            isTurning = false;
         }
 
         private void LookAround()
@@ -405,7 +441,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
             if (isMoving)
             {
-                bool isRunning = false;
                 bobAmount = isRunning ? runBobAmount : walkBobAmount;
                 bobSpeed = isRunning ? runBobSpeed : walkBobSpeed;
             }
@@ -509,11 +544,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
         {
             idleBobAmount = value;
             walkBobAmount = value;
-        }
-
-        public void DisableLookAround()
-        {
-            canLookAround = false;
         }
     }
 }
