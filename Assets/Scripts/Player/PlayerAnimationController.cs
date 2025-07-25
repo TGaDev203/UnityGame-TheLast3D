@@ -2,27 +2,32 @@ using UnityEngine;
 
 public class PlayerAnimationController : MonoBehaviour
 {
-    private Animator playerAnimation;
+    private Animator playerAnimator;
 
     private void Awake()
     {
-        playerAnimation = GetComponent<Animator>();
+        playerAnimator = GetComponent<Animator>();
     }
 
     public void SetDirection(Vector2 input)
     {
         Vector2 direction = input.normalized;
 
-        playerAnimation.SetFloat("VelocityX", direction.x);
-        playerAnimation.SetFloat("VelocityY", direction.y);
+        playerAnimator.SetFloat("VelocityX", direction.x);
+        playerAnimator.SetFloat("VelocityY", direction.y);
     }
 
     public void SetSpeedMultiplier(float value)
     {
-        playerAnimation.SetFloat("speedMultiplier", value);
+        playerAnimator.SetFloat("speedMultiplier", value);
     }
     public void SetIsRunning(bool isRunning)
     {
-        playerAnimation.SetBool("isRunning", isRunning);
+        playerAnimator.SetBool("isRunning", isRunning);
+    }
+
+    public void SetJumpType(int type)
+    {
+        playerAnimator.SetInteger("jumpType", type);
     }
 }

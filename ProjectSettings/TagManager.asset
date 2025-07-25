@@ -8,6 +8,7 @@ TagManager:
   - Locked
   - DoorWay
   - DoorLeaf
+  - Ground
   layers:
   - Default
   - TransparentFX

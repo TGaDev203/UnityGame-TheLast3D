@@ -12,33 +12,44 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private float cameraSensitivity;
         [SerializeField] private float chestCheckDistance;
         [SerializeField] private float doorCheckDistance;
+        [SerializeField] private float fallMultiplier;
+        [SerializeField] private float groundCheckRadius;
+        [SerializeField] private float gravity;
         [SerializeField] private float idleBobAmount;
         [SerializeField] private float idleBobSpeed;
+        [SerializeField] private float jumpForce;
         [SerializeField] private float moveInputDeadZone;
         [SerializeField] private float runBobAmount;
         [SerializeField] private float runBobSpeed;
         [SerializeField] private float runSpeed;
         [SerializeField] private float smoothTime;
-        [SerializeField] private float swipeSpeedThreshold = 0.5f;
-        [SerializeField] private float rotationThreshold = 20f;
+        [SerializeField] private float swipeSpeedThreshold;
+        [SerializeField] private float rotationThreshold;
         [SerializeField] private float walkBobAmount;
         [SerializeField] private float walkBobSpeed;
         [SerializeField] private float walkSpeed;
+        [SerializeField] private LayerMask groundLayer;
         [SerializeField] private Transform cameraTransform;
+        [SerializeField] private Transform groundCheck;
         private bool canLookAround = true;
         private bool canToggleDoor = true;
         private bool canToggleChest = true;
         private bool isPlayerNearby = false;
-        private bool isMoving = false;
         private bool isTurning = false;
+        private bool isMoving = false;
+        private bool isJumping = false;
+        private bool wasGroundedLastFrame;
         private CharacterController characterController;
-        private PlayerAnimationController characterAnimation;
+        private PlayerAnimationController playerAnim;
         private float bodyRotationY;
         private float bodyTurnSpeed = 150f;
         private float bobTimer = 0f;
         private float bodyYaw;
         private float doorToggleCooldown = 1f;
+        private const float doubleTapThreshold = 0.3f;
         private float halfScreenWidth;
+        private float lastTapTime = 0f;
+        private Vector3 verticalVelocity;
         private Vector2 currentRotation;
         private Vector2 input;
         private Vector2 lookInput;
@@ -56,7 +67,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private void Awake()
         {
             animator = GetComponent<Animator>();
-            characterAnimation = GetComponent<PlayerAnimationController>();
+            playerAnim = GetComponent<PlayerAnimationController>();
             playerHealth = GetComponent<PlayerHealth>();
         }
 
@@ -104,15 +115,14 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
             if (rightFingerId != -1 && canLookAround)
             {
-                // Only look around if the right finger is being tracked;
                 LookAround();
-                Debug.Log("Rotating");
             }
 
-            if (leftFingerId != -1)
+            if (leftFingerId == -1)
             {
-                Move();
-                Debug.Log("Moving");
+                isMoving = false;
+                playerAnim.SetDirection(Vector2.zero);
+                playerAnim.SetIsRunning(false);
             }
 
             HandleHeadBob();
@@ -121,6 +131,25 @@ namespace UnityStandardAssets.Characters.FirstPerson
             bodyYaw = Mathf.MoveTowardsAngle(bodyYaw, currentRotation.x, bodyTurnSpeed * Time.deltaTime);
             transform.rotation = Quaternion.Euler(0, bodyYaw, 0);
 
+            if (characterController.isGrounded && verticalVelocity.y < 0)
+            {
+                verticalVelocity.y = -2f;
+            }
+            else if (verticalVelocity.y < 0)
+            {
+                verticalVelocity.y += gravity * fallMultiplier * Time.deltaTime;
+            }
+            else
+            {
+                verticalVelocity.y += gravity * Time.deltaTime;
+            }
+
+            Vector3 horizontalMovement = GetMovementVector();
+            Vector3 totalMovement = horizontalMovement + verticalVelocity * Time.deltaTime;
+
+            characterController.Move(totalMovement.sqrMagnitude > 0.0001f ? totalMovement : Vector3.zero);
+
+            HandleLandingState();
         }
 
         private void GetTouchInput()
@@ -148,9 +177,18 @@ namespace UnityStandardAssets.Characters.FirstPerson
                             currentRotation.x = yaw;
                             targetRotation.x = yaw;
 
+                            if (Time.time - lastTapTime <= doubleTapThreshold && lastTapTime != 0f)
+                            {
+                                Jump();
+                                lastTapTime = 0f;
+                            }
+                            else
+                            {
+                                lastTapTime = Time.time;
+                            }
+
                             Debug.Log("Synced yaw rotation: " + yaw);
                         }
-
 
                         break;
 
@@ -163,8 +201,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
                             leftFingerId = -1;
                             Debug.Log("Stopped tracking left finger");
                             input = Vector2.zero;
-                            characterAnimation.SetDirection(Vector2.zero);
-                            characterAnimation.SetIsRunning(false);
+                            playerAnim.SetDirection(Vector2.zero);
+                            playerAnim.SetIsRunning(false);
                         }
                         else if (touch.fingerId == rightFingerId)
                         {
@@ -200,23 +238,17 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
         }
 
-        private void Move()
+        private Vector3 GetMovementVector()
         {
-            if (playerHealth.IsDead) return;
-
-            if (input.sqrMagnitude <= moveInputDeadZone)
+            if (playerHealth.IsDead || input.sqrMagnitude <= moveInputDeadZone)
             {
-                isMoving = false;
-                characterAnimation.SetDirection(Vector2.zero);
-                characterAnimation.SetSpeedMultiplier(1f);
-                characterAnimation.SetIsRunning(false);
-                return;
+                return Vector3.zero;
             }
 
             isMoving = true;
 
             Vector2 movementInput = input.normalized;
-            characterAnimation.SetDirection(movementInput);
+            playerAnim.SetDirection(movementInput);
 
             float inputMagnitude = input.magnitude;
             bool isRunning = inputMagnitude > 400f;
@@ -225,26 +257,83 @@ namespace UnityStandardAssets.Characters.FirstPerson
                                             movementInput.y > 0.7f &&
                                             Mathf.Abs(movementInput.x) < 0.3f;
 
-            characterAnimation.SetIsRunning(isMovingStraightForward);
+            bool canRun = !isJumping;
+
+            if (canRun)
+            {
+                playerAnim.SetIsRunning(isMovingStraightForward);
+            }
+            else
+            {
+                playerAnim.SetIsRunning(false);
+            }
 
             if (!isMovingStraightForward)
             {
                 float speedMultiplier = isRunning ? 1.5f : 1f;
-                characterAnimation.SetSpeedMultiplier(speedMultiplier);
+                playerAnim.SetSpeedMultiplier(speedMultiplier);
             }
             else
             {
-                characterAnimation.SetSpeedMultiplier(1f);
+                playerAnim.SetSpeedMultiplier(1f);
             }
 
             float moveSpeed = isRunning ? runSpeed : walkSpeed;
             Vector2 movementDirection = movementInput * moveSpeed * Time.deltaTime;
 
-            characterController.Move(
-                transform.right * movementDirection.x + transform.forward * movementDirection.y
-            );
-
             SoundManager.Instance.PlayFootStepSounds(isRunning);
+
+            return transform.right * movementDirection.x + transform.forward * movementDirection.y;
+        }
+
+        private void Jump()
+        {
+            if (IsGrounded() && !playerHealth.IsDead)
+            {
+                isJumping = true;
+                verticalVelocity.y = jumpForce;
+
+                Vector2 movementInput = input.normalized;
+
+                int jumpType = 1;
+
+                if (movementInput.y > 0.5f && Mathf.Abs(movementInput.x) < 0.3f)
+                {
+                    jumpType = 2;
+                }
+                else if (movementInput.y < -0.3f)
+                {
+                    jumpType = 3;
+                }
+
+                playerAnim.SetJumpType(jumpType);
+
+                Debug.Log("Jump triggered! Type: " + jumpType);
+            }
+        }
+
+        private void HandleLandingState()
+        {
+            bool isGroundedNow = IsGrounded();
+
+            if (isJumping && isGroundedNow && !wasGroundedLastFrame)
+            {
+                isJumping = false;
+                playerAnim.SetJumpType(0);
+                Debug.Log("Landed!");
+            }
+
+            if (!isGroundedNow)
+            {
+                playerAnim.SetIsRunning(false);
+            }
+
+            wasGroundedLastFrame = isGroundedNow;
+        }
+
+        private bool IsGrounded()
+        {
+            return Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayer);
         }
 
         private void TriggerTurnLeft()
