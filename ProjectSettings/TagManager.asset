@@ -10,6 +10,7 @@ TagManager:
   - DoorLeaf
   - Ground
   - Standable
+  - Dummy
   layers:
   - Default
   - TransparentFX

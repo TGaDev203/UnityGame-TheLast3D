@@ -66,6 +66,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private int leftFingerId, rightFingerId;
         private int turnLayerIndex;
         private PlayerHealth playerHealth;
+        [SerializeField] private RectTransform padlockArea;
 
         public void DisableLookAround() => canLookAround = false;
         private void TriggerTurnRight() => StartCoroutine(PerformTurn("turnRight"));
@@ -170,6 +171,25 @@ namespace UnityStandardAssets.Characters.FirstPerson
             hasStarted = true;
         }
 
+        private void OnControllerColliderHit(ControllerColliderHit hit)
+        {
+            if (hit.gameObject.CompareTag("Dummy"))
+            {
+                Rigidbody rb = hit.collider.attachedRigidbody;
+                if (rb != null && !rb.isKinematic)
+                {
+                    Vector3 pushDir = hit.moveDirection.normalized;
+                    pushDir.y = 0;
+
+                    rb.AddForce(pushDir * 0.3f, ForceMode.Impulse);
+
+                    rb.AddForce(Vector3.down * 50f, ForceMode.Impulse);
+
+                    rb.AddTorque(new Vector3(0, 0, Random.Range(-1f, 1f)) * 100f, ForceMode.Impulse);
+                }
+            }
+        }
+
         private void GetTouchInput()
         {
             // Iterate through all the detected touches
@@ -197,14 +217,17 @@ namespace UnityStandardAssets.Characters.FirstPerson
                             currentRotation.x = yaw;
                             targetRotation.x = yaw;
 
-                            if (Time.time - lastTapTime <= doubleTapThreshold && lastTapTime != 0f)
+                            if (!(lockButton_Opened.gameObject.activeSelf || lockButton_Closed.gameObject.activeSelf) || !IsTouchOverPadlock(touch.position))
                             {
-                                Jump();
-                                lastTapTime = 0f;
-                            }
-                            else
-                            {
-                                lastTapTime = Time.time;
+                                if (Time.time - lastTapTime <= doubleTapThreshold && lastTapTime != 0f)
+                                {
+                                    Jump();
+                                    lastTapTime = 0f;
+                                }
+                                else
+                                {
+                                    lastTapTime = Time.time;
+                                }
                             }
 
                             // Debug.Log("Synced yaw rotation: " + yaw);
@@ -544,6 +567,19 @@ namespace UnityStandardAssets.Characters.FirstPerson
         {
             idleBobAmount = value;
             walkBobAmount = value;
+        }
+
+        private bool IsTouchOverPadlock(Vector2 touchPosition)
+        {
+            Vector2 localPoint;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                padlockArea,
+                touchPosition,
+                null,
+                out localPoint
+            );
+
+            return padlockArea.rect.Contains(localPoint);
         }
     }
 }

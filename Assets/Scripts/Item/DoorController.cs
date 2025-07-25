@@ -8,9 +8,9 @@ public class DoorController : MonoBehaviour
     [SerializeField] private Transform doorLeaf;
     
     [Header("Door Settings")]
-    [SerializeField] private float openAngle = 90f;
-    [SerializeField] private float closeAngle = 0f;
-    [SerializeField] private float openDuration = 1f;
+    [SerializeField] private float openAngle;
+    [SerializeField] private float closeAngle;
+    [SerializeField] private float openDuration;
     [SerializeField] private bool invertRotation = false;
 
     private bool isOpen = false;
@@ -38,7 +38,7 @@ public class DoorController : MonoBehaviour
 
         rotateRoutine = StartCoroutine(RotateDoor(targetAngle, openDuration));
         if (navObstacle != null)
-            navObstacle.enabled = !isOpen; // mở cửa thì tắt obstacle, đóng thì bật lại
+            navObstacle.enabled = !isOpen;
         if (isOpen)
             SoundManager.Instance?.PlayOpenDoorSound();
         else
