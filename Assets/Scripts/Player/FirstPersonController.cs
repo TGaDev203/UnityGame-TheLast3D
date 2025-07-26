@@ -6,15 +6,23 @@ namespace UnityStandardAssets.Characters.FirstPerson
 {
     public class FirstPersonController : MonoBehaviour
     {
-        [SerializeField] private Button lockButton_Closed;
-        [SerializeField] private Button lockButton_Opened;
+        // public enum InteractableType
+        // {
+        //     None,
+        //     Door,
+        //     Chest,
+        //     Item
+        // }
+
+        // [SerializeField] private Button padlockIcon_Closed;
+        // [SerializeField] private Button padlockIcon_Opened;
+        // [SerializeField] private Button handIcon;
         [SerializeField] private float animationSmoothTime;
         [SerializeField] private float cameraSensitivity;
-        [SerializeField] private float chestCheckDistance;
-        [SerializeField] private float doorCheckDistance;
         [SerializeField] private float fallMultiplier;
         [SerializeField] private float groundCheckRadius;
         [SerializeField] private float gravity;
+        // [SerializeField] private float interactionCheckDistance;
         [SerializeField] private float idleBobAmount;
         [SerializeField] private float idleBobSpeed;
         [SerializeField] private float jumpForce;
@@ -32,26 +40,25 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private Transform cameraTransform;
         [SerializeField] private Transform groundCheck;
         private bool canLookAround = true;
-        private bool canToggleDoor = true;
-        private bool canToggleChest = true;
+        // private bool canToggle = true;
         private bool hasStarted = false;
-        private bool isPlayerNearby = false;
+        // private bool isPlayerNearby = false;
         private bool isTurning = false;
         private bool isMoving = false;
         private bool isJumping = false;
         private bool isRunning = false;
         private bool wasGrounded = false;
         private bool wasGroundedLastFrame = false;
-        private CharacterController characterController;
-        private PlayerAnimationController playerAnim;
         private float bodyRotationY;
         private float bodyTurnSpeed = 150f;
         private float bobTimer = 0f;
         private float bodyYaw;
-        private float doorToggleCooldown = 1f;
-        private const float doubleTapThreshold = 0.3f;
+        // private float interactCooldown = 1f;
+        private const float doubleTapThreshold = 0.15f;
         private float halfScreenWidth;
         private float lastTapTime = 0f;
+        private int leftFingerId, rightFingerId;
+        private int turnLayerIndex;
         private Vector3 verticalVelocity;
         private Vector2 currentRotation;
         private Vector2 input;
@@ -61,12 +68,10 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private Vector2 targetRotation;
         private Vector3 originalCameraLocalPos;
         private Animator animator;
-        private DoorController detectedDoor;
-        private ChestController detectedChest;
-        private int leftFingerId, rightFingerId;
-        private int turnLayerIndex;
-        private PlayerHealth playerHealth;
-        [SerializeField] private RectTransform padlockArea;
+        private CharacterController characterController;
+        private PlayerAnimationController playerAnim;
+        private PlayerController playerController;
+        private PlayerInteractor playerInteractor;
 
         public void DisableLookAround() => canLookAround = false;
         private void TriggerTurnRight() => StartCoroutine(PerformTurn("turnRight"));
@@ -77,7 +82,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
         {
             animator = GetComponent<Animator>();
             playerAnim = GetComponent<PlayerAnimationController>();
-            playerHealth = GetComponent<PlayerHealth>();
+            playerController = GetComponent<PlayerController>();
+            playerInteractor = GetComponent<PlayerInteractor>();
         }
 
         private void Start()
@@ -142,7 +148,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
 
             HandleHeadBob();
-            CheckForInteractables();
+            // CheckForInteractables();
 
             bodyYaw = Mathf.MoveTowardsAngle(bodyYaw, currentRotation.x, bodyTurnSpeed * Time.deltaTime);
             transform.rotation = Quaternion.Euler(0, bodyYaw, 0);
@@ -217,7 +223,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
                             currentRotation.x = yaw;
                             targetRotation.x = yaw;
 
-                            if (!(lockButton_Opened.gameObject.activeSelf || lockButton_Closed.gameObject.activeSelf) || !IsTouchOverPadlock(touch.position))
+                            if (playerInteractor.NoInteractionIconsActive())
+
                             {
                                 if (Time.time - lastTapTime <= doubleTapThreshold && lastTapTime != 0f)
                                 {
@@ -283,7 +290,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private Vector3 GetMovementVector()
         {
-            if (playerHealth.IsDead || input.sqrMagnitude <= moveInputDeadZone)
+            if (playerController.IsDead || input.sqrMagnitude <= moveInputDeadZone)
             {
                 playerAnim.SetIsRunning(false);
                 return Vector3.zero;
@@ -342,7 +349,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private void Jump()
         {
-            if (IsGrounded() && !playerHealth.IsDead)
+            if (IsGrounded() && !playerController.IsDead)
             {
                 isJumping = true;
                 verticalVelocity.y = jumpForce;
@@ -482,104 +489,10 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 originalCameraLocalPos + new Vector3(xOffset, yOffset, 0);
         }
 
-        private void CheckForInteractables()
-        {
-            Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
-
-            if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Max(doorCheckDistance, chestCheckDistance)))
-            {
-                DoorController door = hit.collider.GetComponentInParent<DoorController>();
-                if (door != null && Vector3.Distance(cameraTransform.position, hit.point) <= doorCheckDistance)
-                {
-                    detectedDoor = door;
-                    detectedChest = null;
-                    isPlayerNearby = true;
-                    SwitchPadlock();
-                    return;
-                }
-
-                ChestController chest = hit.collider.GetComponentInParent<ChestController>();
-                if (chest != null && Vector3.Distance(cameraTransform.position, hit.point) <= chestCheckDistance)
-                {
-                    detectedChest = chest;
-                    detectedDoor = null;
-                    isPlayerNearby = true;
-                    SwitchPadlock();
-                    return;
-                }
-            }
-
-            isPlayerNearby = false;
-            detectedDoor = null;
-            detectedChest = null;
-            lockButton_Closed?.gameObject.SetActive(false);
-            lockButton_Opened?.gameObject.SetActive(false);
-        }
-
-        public void OpenDoor()
-        {
-            if (isPlayerNearby && detectedDoor != null && canToggleDoor)
-            {
-                detectedDoor.ToggleDoor();
-                SwitchPadlock();
-                StartCoroutine(DoorToggleCooldown());
-            }
-        }
-
-        private IEnumerator DoorToggleCooldown()
-        {
-            canToggleDoor = false;
-            yield return new WaitForSeconds(doorToggleCooldown);
-            canToggleDoor = true;
-        }
-
-        private void SwitchPadlock()
-        {
-            if (detectedDoor != null && detectedDoor.IsOpen)
-            {
-                lockButton_Opened.gameObject.SetActive(true);
-                lockButton_Closed.gameObject.SetActive(false);
-            }
-            else
-            {
-                lockButton_Opened.gameObject.SetActive(false);
-                lockButton_Closed.gameObject.SetActive(true);
-            }
-        }
-
-        public void OpenChest()
-        {
-            if (isPlayerNearby && detectedChest != null && canToggleChest)
-            {
-                detectedChest.ToggleChest();
-                StartCoroutine(ChestToggleCooldown());
-            }
-        }
-
-        private IEnumerator ChestToggleCooldown()
-        {
-            canToggleChest = false;
-            yield return new WaitForSeconds(doorToggleCooldown);
-            canToggleChest = true;
-        }
-
         public void SetBobAmountValue(float value)
         {
             idleBobAmount = value;
             walkBobAmount = value;
-        }
-
-        private bool IsTouchOverPadlock(Vector2 touchPosition)
-        {
-            Vector2 localPoint;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                padlockArea,
-                touchPosition,
-                null,
-                out localPoint
-            );
-
-            return padlockArea.rect.Contains(localPoint);
         }
     }
 }

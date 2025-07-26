@@ -5,8 +5,10 @@ public class SoundManager : MonoBehaviour
 {
     public static SoundManager Instance { get; private set; }
 
-    [SerializeField] public AudioSource backgroundAudioSource;
-    [SerializeField] public AudioSource soundEffectAudioSource;
+    public AudioSource backgroundAudioSource;
+    public AudioSource soundEffectAudioSource;
+    [SerializeField] private AudioClip buttonProgressSound;
+    [SerializeField] private AudioClip buttonEndSound;
     [SerializeField] private AudioClip beingHitSound;
     [SerializeField] private AudioClip closeDoorSound;
     [SerializeField] private AudioClip closeChestSound;
@@ -24,6 +26,8 @@ public class SoundManager : MonoBehaviour
     private float footstepTimer;
     private float nextFootstepTime;
 
+    public void PlayButtonProgressSound() => PlaySound(buttonProgressSound);
+    public void PlayButtonEndSound() => PlaySound(buttonEndSound);
     public void PlayOpenDoorSound() => PlaySound(openDoorSound);
     public void PlayCloseDoorSound() => PlaySound(closeDoorSound);
     public void PlayOpenChestSound() => PlaySound(openChestSound);

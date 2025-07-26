@@ -6,7 +6,7 @@ public class DoorController : MonoBehaviour
 {
     [SerializeField] private NavMeshObstacle navObstacle;
     [SerializeField] private Transform doorLeaf;
-    
+
     [Header("Door Settings")]
     [SerializeField] private float openAngle;
     [SerializeField] private float closeAngle;
@@ -15,13 +15,26 @@ public class DoorController : MonoBehaviour
 
     private bool isOpen = false;
     private Coroutine rotateRoutine;
+    private PlayerInteractor playerInteractor;
+
     private void Awake()
     {
         if (doorLeaf != null && navObstacle == null)
             navObstacle = doorLeaf.GetComponent<NavMeshObstacle>();
     }
+
+    private void Start()
+    {
+        playerInteractor = Object.FindAnyObjectByType<PlayerInteractor>();
+    }
+
     public void ToggleDoor()
     {
+        if (CompareTag("MainDoor"))
+        {
+            playerInteractor.SetEndScreenActive();
+        }
+
         if (CompareTag("Locked"))
         {
             SoundManager.Instance.PlayLockedSound();

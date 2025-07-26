@@ -1,118 +1,59 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 public class ItemInteractor : MonoBehaviour
 {
-    [Header("References")]
-    [SerializeField] private Transform fireButtonUI;
-    [SerializeField] private GameObject bombPrefab;
-    [SerializeField] private Transform bombPlacePoint;
-    [SerializeField] private GameObject explosionVFX;
-    [SerializeField] private GameObject rockToDestroy;
-    [SerializeField] private GameObject winScreen;
+    public enum ItemType { None, Lighter, Dynamite, Key }
 
-    private bool hasLighter = false;
-    private bool hasBomb = false;
-    private bool hasKey = false;
-    private GameObject placedBomb;
+    [Header("Item Type")]
+    public ItemType itemType;
 
-    private void Update()
+    public static bool hasLighter = false;
+    public static bool hasDynamite = false;
+    private static bool hasKey = false;
+
+    public static bool PlayerHasKey() => hasKey;
+    public static bool PlayerHasDynamite() => hasDynamite;
+    public static bool PlayerHasLighter() => hasLighter;
+
+    private void Start()
     {
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            TryInteract();
-        }
+        SaveManager.Instance.ClearAllData();
 
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            TryPlaceBomb();
-        }
-
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            TryIgnite();
-        }
+        // LoadItemStates();
     }
 
-    private void TryInteract()
+    public void Pickup()
     {
-        if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, 3f))
+        if (itemType == ItemType.None) return;
+
+        switch (itemType)
         {
-            GameObject obj = hit.collider.gameObject;
+            case ItemType.Lighter:
+                hasLighter = true;
+                SaveManager.Instance.SaveBool("HasLighter", true);
+                Debug.Log("Picked up Lighter");
+                break;
 
-            switch (obj.tag)
-            {
-                case "Lighter":
-                    hasLighter = true;
-                    Destroy(obj);
-                    Debug.Log("Picked up Lighter");
-                    break;
+            case ItemType.Dynamite:
+                hasDynamite = true;
+                SaveManager.Instance.SaveBool("HasDynamite", true);
+                Debug.Log("Picked up Dynamite");
+                break;
 
-                case "Bomb":
-                    hasBomb = true;
-                    Destroy(obj);
-                    Debug.Log("Picked up Bomb");
-                    break;
-
-                case "Key":
-                    hasKey = true;
-                    Destroy(obj);
-                    Debug.Log("Picked up Key");
-                    break;
-
-                case "Chest":
-                    if (hasKey)
-                    {
-                        Destroy(obj);
-                        Debug.Log("Chest opened!");
-                    }
-                    break;
-
-                default:
-                    break;
-            }
+            case ItemType.Key:
+                hasKey = true;
+                SaveManager.Instance.SaveBool("HasKey", true);
+                Debug.Log("Picked up Key");
+                break;
         }
+
+        Destroy(gameObject);
     }
 
-    private void TryPlaceBomb()
+    private void LoadItemStates()
     {
-        if (hasBomb && placedBomb == null)
-        {
-            placedBomb = Instantiate(bombPrefab, bombPlacePoint.position, Quaternion.identity);
-            Debug.Log("Bomb placed!");
-
-            if (hasLighter)
-            {
-                fireButtonUI.gameObject.SetActive(true);
-            }
-        }
-    }
-
-    private void TryIgnite()
-    {
-        if (hasLighter && placedBomb != null)
-        {
-            Instantiate(explosionVFX, placedBomb.transform.position, Quaternion.identity);
-            Destroy(placedBomb);
-            placedBomb = null;
-
-            if (rockToDestroy != null)
-            {
-                Destroy(rockToDestroy);
-                Debug.Log("Rock destroyed!");
-                EndGame();
-            }
-
-            fireButtonUI.gameObject.SetActive(false);
-        }
-    }
-
-    private void EndGame()
-    {
-        if (winScreen != null)
-        {
-            winScreen.SetActive(true);
-            Debug.Log("You escaped! Game Over!");
-        }
+        hasLighter = SaveManager.Instance.LoadBool("HasLighter");
+        hasDynamite = SaveManager.Instance.LoadBool("HasDynamite");
+        hasKey = SaveManager.Instance.LoadBool("HasKey");
     }
 }

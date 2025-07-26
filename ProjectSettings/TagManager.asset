@@ -11,6 +11,10 @@ TagManager:
   - Ground
   - Standable
   - Dummy
+  - Padlock
+  - Unlocked
+  - DynamiteZone
+  - MainDoor
   layers:
   - Default
   - TransparentFX
