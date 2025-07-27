@@ -51,6 +51,23 @@ public class PlayerInteractor : MonoBehaviour
             PlaceDynamite();
         }
     }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("DynamiteZone"))
+        {
+            isInDynamiteZone = true;
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("DynamiteZone"))
+        {
+            isInDynamiteZone = false;
+        }
+    }
+
     private void CheckForInteractables()
     {
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
@@ -222,21 +239,5 @@ public class PlayerInteractor : MonoBehaviour
     public void SetEndScreenActive()
     {
         endScreen.SetActive(true);
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("DynamiteZone"))
-        {
-            isInDynamiteZone = true;
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("DynamiteZone"))
-        {
-            isInDynamiteZone = false;
-        }
     }
 }

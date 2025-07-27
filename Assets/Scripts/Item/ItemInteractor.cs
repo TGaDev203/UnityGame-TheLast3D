@@ -46,7 +46,8 @@ public class ItemInteractor : MonoBehaviour
                 Debug.Log("Picked up Key");
                 break;
         }
-
+        
+        SoundManager.Instance.PlayPickupSound();
         Destroy(gameObject);
     }
 

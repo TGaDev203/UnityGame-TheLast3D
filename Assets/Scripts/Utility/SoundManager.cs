@@ -7,6 +7,7 @@ public class SoundManager : MonoBehaviour
 
     public AudioSource backgroundAudioSource;
     public AudioSource soundEffectAudioSource;
+    
     [SerializeField] private AudioClip buttonProgressSound;
     [SerializeField] private AudioClip buttonEndSound;
     [SerializeField] private AudioClip beingHitSound;
@@ -21,22 +22,34 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private AudioClip mainMenuSound;
     [SerializeField] private AudioClip openDoorSound;
     [SerializeField] private AudioClip openChestSound;
+    [SerializeField] private AudioClip pickupSound;
     [SerializeField] private AudioClip[] footStepSounds;
     [SerializeField] private float footstepInterval;
+
+    [Header("Footstep")]
     private float footstepTimer;
     private float nextFootstepTime;
 
+  [Header("Tired Sound")]
+    [SerializeField] private AudioClip tiredBreathSound;
+    [SerializeField] private float tiredThreshold = 6f;
+    [SerializeField] private float tiredCooldown = 3f;
+    private float runningStartTime = -1f;
+    private float nextTiredSoundTime = 0f;
+
     public void PlayButtonProgressSound() => PlaySound(buttonProgressSound);
     public void PlayButtonEndSound() => PlaySound(buttonEndSound);
-    public void PlayOpenDoorSound() => PlaySound(openDoorSound);
-    public void PlayCloseDoorSound() => PlaySound(closeDoorSound);
-    public void PlayOpenChestSound() => PlaySound(openChestSound);
-    public void PlayCloseChestSound() => PlaySound(closeChestSound);
-    public void PlayLockedSound() => PlaySound(lockedSound);
     public void PlayBeingHitSound() => PlaySound(beingHitSound);
-    public void PlayJumpSound() => PlaySound(jumpSound);
-    public void PlayLandSound() => PlaySound(landSound);
+    public void PlayCloseChestSound() => PlaySound(closeChestSound);
+    public void PlayCloseDoorSound() => PlaySound(closeDoorSound);
     public void PlayDieSound() => PlaySound(dieSound);
+    public void PlayJumpSound() => PlaySound(jumpSound);
+    public void PlayPickupSound() => PlaySound(pickupSound);
+    public void PlayLockedSound() => PlaySound(lockedSound);
+    public void PlayLandSound() => PlaySound(landSound);
+    public void PlayOpenChestSound() => PlaySound(openChestSound);
+    public void PlayOpenDoorSound() => PlaySound(openDoorSound);
+    public void PlayTiredBreathSound() => PlaySound(tiredBreathSound);
 
     private void Awake()
     {
@@ -63,16 +76,41 @@ public class SoundManager : MonoBehaviour
         }
     }
 
-    public void PlayFootStepSounds(bool isRunning)
-    {
-        float interval = isRunning ? footstepInterval * 0.6f : footstepInterval;
+public void PlayFootStepSounds(bool isRunning, bool isTired)
+{
+    float interval = isRunning ? footstepInterval * 0.6f : footstepInterval;
 
-        if (Time.time >= nextFootstepTime && footStepSounds.Length > 0)
+    if (isRunning)
+    {
+        // Nếu mệt và đủ thời gian → phát tiếng thở
+        if (isTired && Time.time >= nextTiredSoundTime)
         {
-            int index = Random.Range(0, footStepSounds.Length);
-            soundEffectAudioSource.PlayOneShot(footStepSounds[index]);
-            nextFootstepTime = Time.time + interval;
+            if (tiredBreathSound != null)
+            {
+                PlayTiredBreathSound();
+                nextTiredSoundTime = Time.time + tiredCooldown;
+            }
         }
+    }
+
+    if (Time.time >= nextFootstepTime && footStepSounds.Length > 0)
+    {
+        int index = Random.Range(0, footStepSounds.Length);
+        soundEffectAudioSource.PlayOneShot(footStepSounds[index]);
+        nextFootstepTime = Time.time + interval;
+    }
+}
+
+
+    public void PlayBackgroundSound()
+    {
+        if (backgroundAudioSource == null) return;
+
+        backgroundAudioSource.loop = true;
+
+        string scene = SceneManager.GetActiveScene().name;
+        backgroundAudioSource.clip = (scene == "MainMenu_Scene") ? mainMenuSound : gamePlaySound;
+        backgroundAudioSource.Play();
     }
 
     public void PlayChaseSound(AudioClip clip)
@@ -115,14 +153,4 @@ public class SoundManager : MonoBehaviour
         }
     }
 
-    public void PlayBackgroundSound()
-    {
-        if (backgroundAudioSource == null) return;
-
-        backgroundAudioSource.loop = true;
-
-        string scene = SceneManager.GetActiveScene().name;
-        backgroundAudioSource.clip = (scene == "Main_Scene") ? mainMenuSound : gamePlaySound;
-        backgroundAudioSource.Play();
-    }
 }

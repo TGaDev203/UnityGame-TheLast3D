@@ -1,28 +1,15 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace UnityStandardAssets.Characters.FirstPerson
 {
     public class FirstPersonController : MonoBehaviour
     {
-        // public enum InteractableType
-        // {
-        //     None,
-        //     Door,
-        //     Chest,
-        //     Item
-        // }
-
-        // [SerializeField] private Button padlockIcon_Closed;
-        // [SerializeField] private Button padlockIcon_Opened;
-        // [SerializeField] private Button handIcon;
         [SerializeField] private float animationSmoothTime;
         [SerializeField] private float cameraSensitivity;
         [SerializeField] private float fallMultiplier;
         [SerializeField] private float groundCheckRadius;
         [SerializeField] private float gravity;
-        // [SerializeField] private float interactionCheckDistance;
         [SerializeField] private float idleBobAmount;
         [SerializeField] private float idleBobSpeed;
         [SerializeField] private float jumpForce;
@@ -287,50 +274,89 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 }
             }
         }
+private float fatigue = 0f;
+private const float maxFatigue = 100f;
+private const float fatigueIncreaseRate = 20f; // mỗi giây khi chạy
+private const float fatigueDecreaseRate = 10f; // mỗi giây khi không chạy
+private bool isTired => fatigue >= maxFatigue;
 
-        private Vector3 GetMovementVector()
+private Vector3 GetMovementVector()
+{
+    if (playerController.IsDead || input.sqrMagnitude <= moveInputDeadZone)
+    {
+        isMoving = false;
+        isRunning = false;
+        playerAnim.SetIsRunning(false);
+        playerAnim.SetSpeedMultiplier(1f);
+        return Vector3.zero;
+    }
+
+    isMoving = true;
+
+    Vector2 movementInput = input.normalized;
+    isRunning = input.magnitude > 400f;
+
+    playerAnim.SetDirection(movementInput);
+
+    bool isMovingStraightForward = isRunning &&
+                                    movementInput.y > 0.7f &&
+                                    Mathf.Abs(movementInput.x) < 0.3f;
+
+    float moveSpeed = isRunning ? runSpeed : walkSpeed;
+
+    // === Xử lý mệt dựa trên fatigue ===
+    if (isRunning && !isJumping)
+    {
+        fatigue = Mathf.Min(maxFatigue, fatigue + fatigueIncreaseRate * Time.deltaTime);
+    }
+    else
+    {
+        fatigue = Mathf.Max(0f, fatigue - fatigueDecreaseRate * Time.deltaTime);
+    }
+
+    // === Giảm tốc độ nếu mệt ===
+    if (isTired)
+        moveSpeed *= 0.7f;
+
+    // === Xử lý Animator ===
+    if (isJumping)
+    {
+        moveSpeed *= 0.9f;
+        playerAnim.SetIsRunning(false);
+        playerAnim.SetSpeedMultiplier(1f);
+    }
+    else
+    {
+        bool shouldRun = isMovingStraightForward && !isTired;
+        float speedMultiplier = 1f;
+
+        if (shouldRun)
         {
-            if (playerController.IsDead || input.sqrMagnitude <= moveInputDeadZone)
-            {
-                playerAnim.SetIsRunning(false);
-                return Vector3.zero;
-            }
-
-            isMoving = true;
-
-            Vector2 movementInput = input.normalized;
-            isRunning = input.magnitude > 400f;
-
-            playerAnim.SetDirection(movementInput);
-
-            bool isMovingStraightForward = isRunning &&
-                                            movementInput.y > 0.7f &&
-                                            Mathf.Abs(movementInput.x) < 0.3f;
-
-            float moveSpeed = isRunning ? runSpeed : walkSpeed;
-
-            if (isJumping)
-            {
-                moveSpeed *= 0.9f;
-                playerAnim.SetIsRunning(false);
-            }
-            else
-            {
-                bool shouldRun = isMovingStraightForward;
-                playerAnim.SetIsRunning(shouldRun);
-
-                float speedMultiplier = 1f;
-                if (!shouldRun && isRunning)
-                    speedMultiplier = 1.5f;
-
-                playerAnim.SetSpeedMultiplier(speedMultiplier);
-            }
-
-            Vector2 movementDirection = movementInput * moveSpeed * Time.deltaTime;
-            SoundManager.Instance.PlayFootStepSounds(isRunning && !isJumping);
-
-            return transform.right * movementDirection.x + transform.forward * movementDirection.y;
+            playerAnim.SetIsRunning(true);
+            speedMultiplier = 1f;
         }
+        else if (isRunning)
+        {
+            playerAnim.SetIsRunning(true);
+            speedMultiplier = 1.5f;
+        }
+        else
+        {
+            playerAnim.SetIsRunning(false);
+            speedMultiplier = 1f;
+        }
+
+        playerAnim.SetSpeedMultiplier(speedMultiplier);
+    }
+
+    Vector2 movementDirection = movementInput * moveSpeed * Time.deltaTime;
+
+    // === Truyền trạng thái mệt và chạy vào FootStepSound ===
+    bool shouldPlayRunSound = isRunning && !isJumping && isMovingStraightForward;
+    SoundManager.Instance.PlayFootStepSounds(shouldPlayRunSound, isTired);
+
+    return transform.right * movementDirection.x + transform.forward * movementDirection.y;
+}
 
         private IEnumerator PerformTurn(string triggerName)
         {
