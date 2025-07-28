@@ -1,44 +1,50 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace UnityStandardAssets.Characters.FirstPerson
 {
     public class FirstPersonController : MonoBehaviour
     {
-        [SerializeField] private Button lockButton_Closed;
-        [SerializeField] private Button lockButton_Opened;
         [SerializeField] private float animationSmoothTime;
         [SerializeField] private float cameraSensitivity;
-        [SerializeField] private float chestCheckDistance;
-        [SerializeField] private float doorCheckDistance;
+        [SerializeField] private float fallMultiplier;
+        [SerializeField] private float groundCheckRadius;
+        [SerializeField] private float gravity;
         [SerializeField] private float idleBobAmount;
         [SerializeField] private float idleBobSpeed;
+        [SerializeField] private float jumpForce;
         [SerializeField] private float moveInputDeadZone;
         [SerializeField] private float runBobAmount;
         [SerializeField] private float runBobSpeed;
         [SerializeField] private float runSpeed;
         [SerializeField] private float smoothTime;
-        [SerializeField] private float swipeSpeedThreshold = 0.5f;
-        [SerializeField] private float rotationThreshold = 20f;
+        [SerializeField] private float swipeSpeedThreshold;
+        [SerializeField] private float rotationThreshold;
         [SerializeField] private float walkBobAmount;
         [SerializeField] private float walkBobSpeed;
         [SerializeField] private float walkSpeed;
+        [SerializeField] private LayerMask groundLayer;
         [SerializeField] private Transform cameraTransform;
+        [SerializeField] private Transform groundCheck;
+        [SerializeField] private GameObject pauseMenuPanel;
         private bool canLookAround = true;
-        private bool canToggleDoor = true;
-        private bool canToggleChest = true;
-        private bool isPlayerNearby = false;
-        private bool isMoving = false;
+        private bool hasStarted = false;
         private bool isTurning = false;
-        private CharacterController characterController;
-        private PlayerAnimationController characterAnimation;
+        private bool isMoving = false;
+        private bool isJumping = false;
+        private bool isRunning = false;
+        private bool wasGrounded = false;
+        private bool wasGroundedLastFrame = false;
         private float bodyRotationY;
         private float bodyTurnSpeed = 150f;
         private float bobTimer = 0f;
         private float bodyYaw;
-        private float doorToggleCooldown = 1f;
+        private const float doubleTapThreshold = 0.15f;
         private float halfScreenWidth;
+        private float lastTapTime = 0f;
+        private int leftFingerId, rightFingerId;
+        private int turnLayerIndex;
+        private Vector3 verticalVelocity;
         private Vector2 currentRotation;
         private Vector2 input;
         private Vector2 lookInput;
@@ -47,17 +53,22 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private Vector2 targetRotation;
         private Vector3 originalCameraLocalPos;
         private Animator animator;
-        private DoorController detectedDoor;
-        private ChestController detectedChest;
-        private int leftFingerId, rightFingerId;
-        private int turnLayerIndex;
-        private PlayerHealth playerHealth;
+        private CharacterController characterController;
+        private PlayerAnimationController playerAnim;
+        private PlayerController playerController;
+        private PlayerInteractor playerInteractor;
+
+        public void DisableLookAround() => canLookAround = false;
+        private void TriggerTurnRight() => StartCoroutine(PerformTurn("turnRight"));
+        private void TriggerTurnLeft() => StartCoroutine(PerformTurn("turnLeft"));
+        private bool IsGrounded() => Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayer);
 
         private void Awake()
         {
             animator = GetComponent<Animator>();
-            characterAnimation = GetComponent<PlayerAnimationController>();
-            playerHealth = GetComponent<PlayerHealth>();
+            playerAnim = GetComponent<PlayerAnimationController>();
+            playerController = GetComponent<PlayerController>();
+            playerInteractor = GetComponent<PlayerInteractor>();
         }
 
         private void Start()
@@ -102,30 +113,75 @@ namespace UnityStandardAssets.Characters.FirstPerson
         {
             GetTouchInput();
 
-            if (rightFingerId != -1 && canLookAround)
+            bool isGrounded = IsGrounded();
+            if (hasStarted && !wasGrounded && isGrounded)
             {
-                // Only look around if the right finger is being tracked;
-                LookAround();
-                Debug.Log("Rotating");
+                SoundManager.Instance.PlayLandSound();
             }
 
-            if (leftFingerId != -1)
+            wasGrounded = isGrounded;
+            if (rightFingerId != -1 && canLookAround)
             {
-                Move();
-                Debug.Log("Moving");
+                LookAround();
+            }
+
+            if (leftFingerId == -1)
+            {
+                isMoving = false;
+                playerAnim.SetDirection(Vector2.zero);
+                playerAnim.SetIsRunning(false);
             }
 
             HandleHeadBob();
-            CheckForInteractables();
 
             bodyYaw = Mathf.MoveTowardsAngle(bodyYaw, currentRotation.x, bodyTurnSpeed * Time.deltaTime);
             transform.rotation = Quaternion.Euler(0, bodyYaw, 0);
 
+            if (characterController.isGrounded && verticalVelocity.y < 0)
+            {
+                verticalVelocity.y = -2f;
+            }
+            else if (verticalVelocity.y < 0)
+            {
+                verticalVelocity.y += gravity * fallMultiplier * Time.deltaTime;
+            }
+            else
+            {
+                verticalVelocity.y += gravity * Time.deltaTime;
+            }
+
+            Vector3 horizontalMovement = GetMovementVector();
+            Vector3 totalMovement = horizontalMovement + verticalVelocity * Time.deltaTime;
+
+            characterController.Move(totalMovement.sqrMagnitude > 0.0001f ? totalMovement : Vector3.zero);
+
+            CheckGroundTag();
+            HandleLandingState();
+
+            hasStarted = true;
+        }
+
+        private void OnControllerColliderHit(ControllerColliderHit hit)
+        {
+            if (hit.gameObject.CompareTag("Dummy"))
+            {
+                Rigidbody rb = hit.collider.attachedRigidbody;
+                if (rb != null && !rb.isKinematic)
+                {
+                    Vector3 pushDir = hit.moveDirection.normalized;
+                    pushDir.y = 0;
+
+                    rb.AddForce(pushDir * 0.3f, ForceMode.Impulse);
+
+                    rb.AddForce(Vector3.down * 50f, ForceMode.Impulse);
+
+                    rb.AddTorque(new Vector3(0, 0, Random.Range(-1f, 1f)) * 100f, ForceMode.Impulse);
+                }
+            }
         }
 
         private void GetTouchInput()
         {
-            // Iterate through all the detected touches
             for (int i = 0; i < Input.touchCount; i++)
             {
                 Touch touch = Input.GetTouch(i);
@@ -137,7 +193,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
                         if (touch.position.x < halfScreenWidth && leftFingerId == -1)
                         {
                             leftFingerId = touch.fingerId;
-                            Debug.Log("Tracking left finger");
+                            // #if UNITY_EDITOR
+                            // Debug.Log("Tracking left finger");
+                            // #endif
                             moveTouchStartPosition = touch.position;
                         }
                         else if (touch.position.x > halfScreenWidth && rightFingerId == -1)
@@ -148,9 +206,22 @@ namespace UnityStandardAssets.Characters.FirstPerson
                             currentRotation.x = yaw;
                             targetRotation.x = yaw;
 
-                            Debug.Log("Synced yaw rotation: " + yaw);
-                        }
+                            if (playerInteractor.NoInteractionIconsActive())
 
+                            {
+                                if (Time.time - lastTapTime <= doubleTapThreshold && lastTapTime != 0f)
+                                {
+                                    Jump();
+                                    lastTapTime = 0f;
+                                }
+                                else
+                                {
+                                    lastTapTime = Time.time;
+                                }
+                            }
+
+                            // Debug.Log("Synced yaw rotation: " + yaw);
+                        }
 
                         break;
 
@@ -161,16 +232,16 @@ namespace UnityStandardAssets.Characters.FirstPerson
                         {
                             // Stop tracking the left finger
                             leftFingerId = -1;
-                            Debug.Log("Stopped tracking left finger");
+                            // Debug.Log("Stopped tracking left finger");
                             input = Vector2.zero;
-                            characterAnimation.SetDirection(Vector2.zero);
-                            characterAnimation.SetIsRunning(false);
+                            playerAnim.SetDirection(Vector2.zero);
+                            playerAnim.SetIsRunning(false);
                         }
                         else if (touch.fingerId == rightFingerId)
                         {
                             // Stop tracking the right finger
                             rightFingerId = -1;
-                            Debug.Log("Stop tracking right finger");
+                            // Debug.Log("Stop tracking right finger");
                         }
 
                         break;
@@ -199,62 +270,48 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 }
             }
         }
-
-        private void Move()
+        private Vector3 GetMovementVector()
         {
-            if (playerHealth.IsDead) return;
-
-            if (input.sqrMagnitude <= moveInputDeadZone)
+            if (playerController.IsDead || input.sqrMagnitude <= moveInputDeadZone)
             {
-                isMoving = false;
-                characterAnimation.SetDirection(Vector2.zero);
-                characterAnimation.SetSpeedMultiplier(1f);
-                characterAnimation.SetIsRunning(false);
-                return;
+                playerAnim.SetIsRunning(false);
+                return Vector3.zero;
             }
 
             isMoving = true;
 
             Vector2 movementInput = input.normalized;
-            characterAnimation.SetDirection(movementInput);
+            isRunning = input.magnitude > 400f;
 
-            float inputMagnitude = input.magnitude;
-            bool isRunning = inputMagnitude > 400f;
+            playerAnim.SetDirection(movementInput);
 
             bool isMovingStraightForward = isRunning &&
                                             movementInput.y > 0.7f &&
                                             Mathf.Abs(movementInput.x) < 0.3f;
 
-            characterAnimation.SetIsRunning(isMovingStraightForward);
+            float moveSpeed = isRunning ? runSpeed : walkSpeed;
 
-            if (!isMovingStraightForward)
+            if (isJumping)
             {
-                float speedMultiplier = isRunning ? 1.5f : 1f;
-                characterAnimation.SetSpeedMultiplier(speedMultiplier);
+                moveSpeed *= 0.9f;
+                playerAnim.SetIsRunning(false);
             }
             else
             {
-                characterAnimation.SetSpeedMultiplier(1f);
+                bool shouldRun = isMovingStraightForward;
+                playerAnim.SetIsRunning(shouldRun);
+
+                float speedMultiplier = 1f;
+                if (!shouldRun && isRunning)
+                    speedMultiplier = 1.5f;
+
+                playerAnim.SetSpeedMultiplier(speedMultiplier);
             }
 
-            float moveSpeed = isRunning ? runSpeed : walkSpeed;
             Vector2 movementDirection = movementInput * moveSpeed * Time.deltaTime;
+            SoundManager.Instance.PlayFootStepSounds(isRunning && !isJumping);
 
-            characterController.Move(
-                transform.right * movementDirection.x + transform.forward * movementDirection.y
-            );
-
-            SoundManager.Instance.PlayFootStepSounds(isRunning);
-        }
-
-        private void TriggerTurnLeft()
-        {
-            StartCoroutine(PerformTurn("turnLeft"));
-        }
-
-        private void TriggerTurnRight()
-        {
-            StartCoroutine(PerformTurn("turnRight"));
+            return transform.right * movementDirection.x + transform.forward * movementDirection.y;
         }
 
         private IEnumerator PerformTurn(string triggerName)
@@ -270,6 +327,86 @@ namespace UnityStandardAssets.Characters.FirstPerson
             bodyRotationY = currentRotation.x;
 
             isTurning = false;
+        }
+
+        private void Jump()
+        {
+            if (IsGrounded() && !playerController.IsDead && !pauseMenuPanel.activeSelf)
+            {
+                isJumping = true;
+                verticalVelocity.y = jumpForce;
+
+                Vector2 movementInput = input.normalized;
+
+                int jumpType = 1;
+
+                if (movementInput.y > 0.5f && Mathf.Abs(movementInput.x) < 0.3f)
+                {
+                    jumpType = 2;
+                }
+                else if (movementInput.y < -0.3f)
+                {
+                    jumpType = 3;
+                }
+
+                playerAnim.SetJumpType(jumpType);
+                SoundManager.Instance.PlayJumpSound();
+
+                // Debug.Log("Jump triggered! Type: " + jumpType);
+            }
+        }
+
+        private string CheckGroundTag()
+        {
+            BoxCollider box = groundCheck.GetComponent<BoxCollider>();
+            if (box == null)
+            {
+                // Debug.LogWarning("GroundCheck doesn't have a BoxCollider!");
+                return null;
+            }
+
+            Vector3 boxCenter = groundCheck.position + box.center;
+            Vector3 boxSize = Vector3.Scale(box.size, groundCheck.lossyScale);
+
+            Collider[] hits = Physics.OverlapBox(boxCenter, boxSize / 2, groundCheck.rotation);
+
+            bool foundStandable = false;
+
+            foreach (var hit in hits)
+            {
+                if (hit.gameObject != gameObject)
+                {
+                    // Debug.Log($"Ground tag: {hit.tag}");
+
+                    if (hit.CompareTag("Standable"))
+                    {
+                        foundStandable = true;
+                        playerAnim.SetJumpType(0);
+                        break;
+                    }
+                }
+            }
+
+            return foundStandable ? "Standable" : null;
+        }
+
+        private void HandleLandingState()
+        {
+            bool isGroundedNow = IsGrounded();
+
+            if (isJumping && isGroundedNow && !wasGroundedLastFrame)
+            {
+                isJumping = false;
+                playerAnim.SetJumpType(0);
+                // Debug.Log("Landed!");
+            }
+
+            if (!isGroundedNow)
+            {
+                playerAnim.SetIsRunning(false);
+            }
+
+            wasGroundedLastFrame = isGroundedNow;
         }
 
         private void LookAround()
@@ -316,7 +453,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
             if (isMoving)
             {
-                bool isRunning = false;
                 bobAmount = isRunning ? runBobAmount : walkBobAmount;
                 bobSpeed = isRunning ? runBobSpeed : walkBobSpeed;
             }
@@ -335,96 +471,15 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 originalCameraLocalPos + new Vector3(xOffset, yOffset, 0);
         }
 
-        public void OpenDoor()
-        {
-            if (isPlayerNearby && detectedDoor != null && canToggleDoor)
-            {
-                detectedDoor.ToggleDoor();
-                SwitchPadlock();
-                StartCoroutine(DoorToggleCooldown());
-            }
-        }
-
-        private IEnumerator DoorToggleCooldown()
-        {
-            canToggleDoor = false;
-            yield return new WaitForSeconds(doorToggleCooldown);
-            canToggleDoor = true;
-        }
-        private void CheckForInteractables()
-        {
-            Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
-
-            if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Max(doorCheckDistance, chestCheckDistance)))
-            {
-                DoorController door = hit.collider.GetComponentInParent<DoorController>();
-                if (door != null && Vector3.Distance(cameraTransform.position, hit.point) <= doorCheckDistance)
-                {
-                    detectedDoor = door;
-                    detectedChest = null;
-                    isPlayerNearby = true;
-                    SwitchPadlock();
-                    return;
-                }
-
-                ChestController chest = hit.collider.GetComponentInParent<ChestController>();
-                if (chest != null && Vector3.Distance(cameraTransform.position, hit.point) <= chestCheckDistance)
-                {
-                    detectedChest = chest;
-                    detectedDoor = null;
-                    isPlayerNearby = true;
-                    SwitchPadlock();
-                    return;
-                }
-            }
-
-            isPlayerNearby = false;
-            detectedDoor = null;
-            detectedChest = null;
-            lockButton_Closed?.gameObject.SetActive(false);
-            lockButton_Opened?.gameObject.SetActive(false);
-        }
-
-
-        private void SwitchPadlock()
-        {
-            if (detectedDoor != null && detectedDoor.IsOpen)
-            {
-                lockButton_Opened.gameObject.SetActive(true);
-                lockButton_Closed.gameObject.SetActive(false);
-            }
-            else
-            {
-                lockButton_Opened.gameObject.SetActive(false);
-                lockButton_Closed.gameObject.SetActive(true);
-            }
-        }
-
-        public void OpenChest()
-        {
-            if (isPlayerNearby && detectedChest != null && canToggleChest)
-            {
-                detectedChest.ToggleChest();
-                StartCoroutine(ChestToggleCooldown());
-            }
-        }
-
-        private IEnumerator ChestToggleCooldown()
-        {
-            canToggleChest = false;
-            yield return new WaitForSeconds(doorToggleCooldown);
-            canToggleChest = true;
-        }
-
         public void SetBobAmountValue(float value)
         {
             idleBobAmount = value;
             walkBobAmount = value;
         }
 
-        public void DisableLookAround()
+        public bool IsJumping()
         {
-            canLookAround = false;
+            return isJumping;
         }
     }
 }

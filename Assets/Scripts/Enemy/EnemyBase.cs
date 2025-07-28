@@ -5,6 +5,7 @@ using System.Collections;
 public abstract class EnemyBase : MonoBehaviour
 {
     [SerializeField] protected EnemySoundProfile soundProfile;
+    [SerializeField] protected AudioSource enemyAudioSource;
 
     [Header("General Settings")]
     [SerializeField] protected float attackRange;
@@ -143,6 +144,21 @@ public abstract class EnemyBase : MonoBehaviour
         {
             AttackPlayer();
         }
+
+        DoorController door = other.GetComponentInParent<DoorController>();
+        if (door != null && !door.IsOpen)
+        {
+            StartCoroutine(HandleDoorInteraction(door));
+        }
+    }
+
+    protected virtual IEnumerator HandleDoorInteraction(DoorController door)
+    {
+        agent.isStopped = true;
+
+        door.ToggleDoor();
+        yield return new WaitForSeconds(1f);
+        agent.isStopped = false;
     }
 
     protected virtual void OnTriggerExit(Collider other)
@@ -167,27 +183,27 @@ public abstract class EnemyBase : MonoBehaviour
         agent.isStopped = false;
     }
 
-    protected void TryPlayVoice()
-    {
-        if (soundProfile != null && soundProfile.voiceSound != null)
-        {
-            SoundManager.Instance.PlayVoice(audioSource, soundProfile.voiceSound);
-        }
-    }
+    // protected void TryPlayVoice()
+    // {
+    //     if (soundProfile != null && soundProfile.voiceSound != null)
+    //     {
+    //         SoundManager.Instance.PlayVoice(audioSource, soundProfile.voiceSound);
+    //     }
+    // }
 
-    protected void TryPlayChaseSound()
-    {
-        if (soundProfile != null)
-        {
-            SoundManager.Instance.PlayChaseSound(soundProfile.chaseSound);
-        }
-    }
+    // protected void TryPlayChaseSound()
+    // {
+    //     if (soundProfile != null)
+    //     {
+    //         SoundManager.Instance.PlayChaseSound(soundProfile.chaseSound);
+    //     }
+    // }
 
-    protected void TryStopChaseSound()
-    {
-        if (soundProfile != null)
-        {
-            SoundManager.Instance.StopChaseSound(soundProfile.chaseSound);
-        }
-    }
+    // protected void TryStopChaseSound()
+    // {
+    //     if (soundProfile != null)
+    //     {
+    //         SoundManager.Instance.StopChaseSound(soundProfile.chaseSound);
+    //     }
+    // }
 }

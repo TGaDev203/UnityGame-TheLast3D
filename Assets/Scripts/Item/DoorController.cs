@@ -1,20 +1,42 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class DoorController : MonoBehaviour
 {
-    [Header("Door Settings")]
+    [SerializeField] private NavMeshObstacle navObstacle;
     [SerializeField] private Transform doorLeaf;
-    [SerializeField] private float openAngle = 90f;
-    [SerializeField] private float closeAngle = 0f;
-    [SerializeField] private float openDuration = 1f;
+
+    [Header("Door Settings")]
+    [SerializeField] private float openAngle;
+    [SerializeField] private float closeAngle;
+    [SerializeField] private float openDuration;
     [SerializeField] private bool invertRotation = false;
 
     private bool isOpen = false;
     private Coroutine rotateRoutine;
+    private PlayerInteractor playerInteractor;
+
+    private void Awake()
+    {
+        if (doorLeaf != null && navObstacle == null)
+            navObstacle = doorLeaf.GetComponent<NavMeshObstacle>();
+    }
+
+    private void Start()
+    {
+        playerInteractor = FindAnyObjectByType<PlayerInteractor>();
+    }
 
     public void ToggleDoor()
     {
+        if (CompareTag("MainDoor"))
+        {
+            playerInteractor.SetEndScreenActive();
+            SoundManager.Instance.soundEffectAudioSource.Stop();
+            SoundManager.Instance.PlayEndSound();
+        }
+
         if (CompareTag("Locked"))
         {
             SoundManager.Instance.PlayLockedSound();
@@ -30,7 +52,8 @@ public class DoorController : MonoBehaviour
             StopCoroutine(rotateRoutine);
 
         rotateRoutine = StartCoroutine(RotateDoor(targetAngle, openDuration));
-
+        if (navObstacle != null)
+            navObstacle.enabled = !isOpen;
         if (isOpen)
             SoundManager.Instance?.PlayOpenDoorSound();
         else
