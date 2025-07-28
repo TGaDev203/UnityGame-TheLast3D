@@ -11,7 +11,8 @@ public class EnemyAIController : EnemyBase
     protected override void Start()
     {
         base.Start();
-        TryPlayVoice();
+        SoundManager.Instance.PlayVoice(enemyAudioSource, soundProfile.voiceSound);
+
         enemyAnim.SetVelocity(0.5f);
     }
 
@@ -19,7 +20,7 @@ public class EnemyAIController : EnemyBase
     {
         base.HandleChase();
         enemyAnim.StopAttack();
-        TryPlayChaseSound();
+        SoundManager.Instance.PlayChaseSound(enemyAudioSource, soundProfile.chaseSound);
         currentVelocity = Mathf.Lerp(currentVelocity, 1f, Time.deltaTime * 5f);
         enemyAnim.SetVelocity(currentVelocity);
     }
@@ -28,7 +29,7 @@ public class EnemyAIController : EnemyBase
     {
         base.GoToNextPatrolPoint();
         enemyAnim.SetVelocity(0.5f);
-        TryStopChaseSound();
+        SoundManager.Instance.PlayVoice(enemyAudioSource, soundProfile.voiceSound);
     }
 
     protected override IEnumerator PerformPauseAction()

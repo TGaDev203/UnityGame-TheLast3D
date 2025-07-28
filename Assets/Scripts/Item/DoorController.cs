@@ -25,7 +25,7 @@ public class DoorController : MonoBehaviour
 
     private void Start()
     {
-        playerInteractor = Object.FindAnyObjectByType<PlayerInteractor>();
+        playerInteractor = FindAnyObjectByType<PlayerInteractor>();
     }
 
     public void ToggleDoor()
@@ -33,6 +33,8 @@ public class DoorController : MonoBehaviour
         if (CompareTag("MainDoor"))
         {
             playerInteractor.SetEndScreenActive();
+            SoundManager.Instance.soundEffectAudioSource.Stop();
+            SoundManager.Instance.PlayEndSound();
         }
 
         if (CompareTag("Locked"))

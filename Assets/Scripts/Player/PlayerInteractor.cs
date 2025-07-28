@@ -10,7 +10,7 @@ public class PlayerInteractor : MonoBehaviour
     [SerializeField] private Button padlockIcon_Closed;
     [SerializeField] private Button padlockIcon_Opened;
     [SerializeField] private Button handIcon;
-    [SerializeField] private GameObject fireIcon;
+    [SerializeField] private Button igniteIcon;
 
     [Header("Interaction Settings")]
     [SerializeField] private float interactionCheckDistance;
@@ -28,29 +28,46 @@ public class PlayerInteractor : MonoBehaviour
     private bool hasPlacedDynamite = false;
     private bool hasExploded = false;
     private InteractableType currentInteractableType = InteractableType.None;
-    private ItemInteractor detectedItem;
+    private ItemPickup detectedItem;
     private ChestController detectedChest;
     private DoorController detectedDoor;
     private float interactCooldown = 1f;
     private GameObject placedDynamite;
     private bool isInDynamiteZone = false;
-
+    private PlayerInventory inventory;
+    public bool HasPlacedDynamite => hasPlacedDynamite;
+    public bool HasExploded => hasExploded;
     private void Start()
     {
-        ItemInteractor.hasDynamite = true;
-        ItemInteractor.hasLighter = true;
+        LoadCheckpointState();
+
+        inventory = GetComponent<PlayerInventory>();
+
+        if (hasExploded && stoneToDestroy != null)
+        {
+            Destroy(stoneToDestroy);
+        }
+
+        if (hasPlacedDynamite && !hasExploded && dynamitePlacePoint != null)
+        {
+            placedDynamite = Instantiate(dynamitePrefab, dynamitePlacePoint.position, Quaternion.identity);
+        }
     }
+
 
     private void Update()
     {
         CheckForInteractables();
 
         if (isInDynamiteZone && placedDynamite == null &&
-            ItemInteractor.PlayerHasDynamite() && ItemInteractor.PlayerHasLighter())
+            inventory.hasDynamite && inventory.hasLighter && !hasExploded)
         {
             PlaceDynamite();
         }
+
+        UpdateIgniteButtonVisibility();
     }
+
 
     private void OnTriggerEnter(Collider other)
     {
@@ -100,14 +117,13 @@ public class PlayerInteractor : MonoBehaviour
                 return;
             }
 
-            ItemInteractor item = hit.collider.GetComponentInChildren<ItemInteractor>();
+            ItemPickup item = hit.collider.GetComponentInChildren<ItemPickup>();
             if (item != null && dist <= interactionCheckDistance)
             {
                 detectedItem = item;
                 detectedDoor = null;
                 detectedChest = null;
                 currentInteractableType = InteractableType.Item;
-
                 isPlayerNearby = true;
                 ShowInteractionUI();
                 return;
@@ -124,6 +140,17 @@ public class PlayerInteractor : MonoBehaviour
         handIcon?.gameObject.SetActive(false);
     }
 
+    private void UpdateIgniteButtonVisibility()
+    {
+        bool show = isInDynamiteZone &&
+                    hasPlacedDynamite &&
+                    !hasExploded &&
+                    inventory.hasDynamite &&
+                    inventory.hasLighter;
+
+        igniteIcon?.gameObject.SetActive(show);
+    }
+
     public void TryToggleInteractable()
     {
         if (!isPlayerNearby || !canToggle)
@@ -132,29 +159,20 @@ public class PlayerInteractor : MonoBehaviour
         switch (currentInteractableType)
         {
             case InteractableType.Door:
-                if (detectedDoor != null)
-                {
-                    detectedDoor.ToggleDoor();
-                    ShowInteractionUI();
-                    StartCoroutine(InteractCooldownRoutine());
-                }
+                detectedDoor?.ToggleDoor();
+                ShowInteractionUI();
+                StartCoroutine(InteractCooldownRoutine());
                 break;
 
             case InteractableType.Chest:
-                if (detectedChest != null)
-                {
-                    detectedChest.ToggleChest();
-                    ShowInteractionUI();
-                    StartCoroutine(InteractCooldownRoutine());
-                }
+                detectedChest?.ToggleChest();
+                ShowInteractionUI();
+                StartCoroutine(InteractCooldownRoutine());
                 break;
 
             case InteractableType.Item:
-                if (detectedItem != null)
-                {
-                    detectedItem.Pickup();
-                    StartCoroutine(InteractCooldownRoutine());
-                }
+                detectedItem?.Pickup();
+                StartCoroutine(InteractCooldownRoutine());
                 break;
         }
     }
@@ -195,49 +213,103 @@ public class PlayerInteractor : MonoBehaviour
     {
         return !padlockIcon_Closed.gameObject.activeInHierarchy &&
                !padlockIcon_Opened.gameObject.activeInHierarchy &&
-               !handIcon.gameObject.activeInHierarchy;
+               !handIcon.gameObject.activeInHierarchy &&
+               !igniteIcon.gameObject.activeInHierarchy;
     }
 
     private void PlaceDynamite()
     {
-        if (hasPlacedDynamite) return;
+        if (hasPlacedDynamite || hasExploded) return;
 
         placedDynamite = Instantiate(dynamitePrefab, dynamitePlacePoint.position, Quaternion.identity);
         hasPlacedDynamite = true;
-
-        // Debug.Log("Dynamite placed!");
-
-        if (fireIcon != null)
-        {
-            fireIcon.SetActive(true);
-        }
     }
-
 
     public void IgniteDynamite()
     {
-        if (hasExploded || placedDynamite == null || !ItemInteractor.PlayerHasLighter()) return;
+        if (hasExploded || placedDynamite == null || !inventory.hasLighter) return;
 
         Instantiate(explosionVFX, placedDynamite.transform.position, Quaternion.identity);
         Destroy(placedDynamite);
         placedDynamite = null;
         hasExploded = true;
 
-        // Debug.Log("Dynamite exploded!");
-
         if (stoneToDestroy != null)
         {
             Destroy(stoneToDestroy);
         }
 
-        if (fireIcon != null)
-        {
-            fireIcon.SetActive(false);
-        }
+        igniteIcon?.gameObject.SetActive(false);
+
+        SaveCheckpoint();
     }
 
     public void SetEndScreenActive()
     {
         endScreen.SetActive(true);
+        SaveManager.Instance.DeleteCheckpoint();
+    }
+
+    public void RestoreStateFromCheckpoint(CheckpointData data)
+    {
+        hasPlacedDynamite = data.hasPlacedDynamite;
+        hasExploded = data.hasExploded;
+        inventory.hasKey = data.hasKey;
+        inventory.hasDynamite = data.hasDynamite;
+        inventory.hasLighter = data.hasLighter;
+
+        if (data.hasExploded && stoneToDestroy != null)
+        {
+            Destroy(stoneToDestroy);
+        }
+
+        if (data.hasPlacedDynamite && !data.hasExploded)
+        {
+            placedDynamite = Instantiate(dynamitePrefab, dynamitePlacePoint.position, Quaternion.identity);
+        }
+
+        transform.position = new Vector3(data.playerX, data.playerY, data.playerZ);
+    }
+
+
+    public void SaveCheckpoint()
+    {
+        CheckpointData data = new CheckpointData
+        {
+            hasKey = inventory.hasKey,
+            hasDynamite = inventory.hasDynamite,
+            hasLighter = inventory.hasLighter,
+            hasPlacedDynamite = hasPlacedDynamite,
+            hasExploded = hasExploded,
+            sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name,
+            playerX = transform.position.x,
+            playerY = transform.position.y,
+            playerZ = transform.position.z
+        };
+
+        SaveManager.Instance.SaveCheckpoint(data);
+    }
+    private void LoadCheckpointState()
+    {
+        CheckpointData data = SaveManager.Instance.LoadCheckpoint();
+        if (data == null) return;
+
+        hasPlacedDynamite = data.hasPlacedDynamite;
+        hasExploded = data.hasExploded;
+
+        if (hasExploded)
+        {
+            if (stoneToDestroy != null)
+            {
+                Destroy(stoneToDestroy);
+            }
+            igniteIcon?.gameObject.SetActive(false);
+            return;
+        }
+
+        if (hasPlacedDynamite && placedDynamite == null)
+        {
+            placedDynamite = Instantiate(dynamitePrefab, dynamitePlacePoint.position, Quaternion.identity);
+        }
     }
 }

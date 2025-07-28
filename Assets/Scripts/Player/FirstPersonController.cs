@@ -26,10 +26,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private LayerMask groundLayer;
         [SerializeField] private Transform cameraTransform;
         [SerializeField] private Transform groundCheck;
+        [SerializeField] private GameObject pauseMenuPanel;
         private bool canLookAround = true;
-        // private bool canToggle = true;
         private bool hasStarted = false;
-        // private bool isPlayerNearby = false;
         private bool isTurning = false;
         private bool isMoving = false;
         private bool isJumping = false;
@@ -40,7 +39,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private float bodyTurnSpeed = 150f;
         private float bobTimer = 0f;
         private float bodyYaw;
-        // private float interactCooldown = 1f;
         private const float doubleTapThreshold = 0.15f;
         private float halfScreenWidth;
         private float lastTapTime = 0f;
@@ -135,7 +133,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
 
             HandleHeadBob();
-            // CheckForInteractables();
 
             bodyYaw = Mathf.MoveTowardsAngle(bodyYaw, currentRotation.x, bodyTurnSpeed * Time.deltaTime);
             transform.rotation = Quaternion.Euler(0, bodyYaw, 0);
@@ -185,7 +182,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private void GetTouchInput()
         {
-            // Iterate through all the detected touches
             for (int i = 0; i < Input.touchCount; i++)
             {
                 Touch touch = Input.GetTouch(i);
@@ -274,89 +270,49 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 }
             }
         }
-private float fatigue = 0f;
-private const float maxFatigue = 100f;
-private const float fatigueIncreaseRate = 20f; // mỗi giây khi chạy
-private const float fatigueDecreaseRate = 10f; // mỗi giây khi không chạy
-private bool isTired => fatigue >= maxFatigue;
-
-private Vector3 GetMovementVector()
-{
-    if (playerController.IsDead || input.sqrMagnitude <= moveInputDeadZone)
-    {
-        isMoving = false;
-        isRunning = false;
-        playerAnim.SetIsRunning(false);
-        playerAnim.SetSpeedMultiplier(1f);
-        return Vector3.zero;
-    }
-
-    isMoving = true;
-
-    Vector2 movementInput = input.normalized;
-    isRunning = input.magnitude > 400f;
-
-    playerAnim.SetDirection(movementInput);
-
-    bool isMovingStraightForward = isRunning &&
-                                    movementInput.y > 0.7f &&
-                                    Mathf.Abs(movementInput.x) < 0.3f;
-
-    float moveSpeed = isRunning ? runSpeed : walkSpeed;
-
-    // === Xử lý mệt dựa trên fatigue ===
-    if (isRunning && !isJumping)
-    {
-        fatigue = Mathf.Min(maxFatigue, fatigue + fatigueIncreaseRate * Time.deltaTime);
-    }
-    else
-    {
-        fatigue = Mathf.Max(0f, fatigue - fatigueDecreaseRate * Time.deltaTime);
-    }
-
-    // === Giảm tốc độ nếu mệt ===
-    if (isTired)
-        moveSpeed *= 0.7f;
-
-    // === Xử lý Animator ===
-    if (isJumping)
-    {
-        moveSpeed *= 0.9f;
-        playerAnim.SetIsRunning(false);
-        playerAnim.SetSpeedMultiplier(1f);
-    }
-    else
-    {
-        bool shouldRun = isMovingStraightForward && !isTired;
-        float speedMultiplier = 1f;
-
-        if (shouldRun)
+        private Vector3 GetMovementVector()
         {
-            playerAnim.SetIsRunning(true);
-            speedMultiplier = 1f;
+            if (playerController.IsDead || input.sqrMagnitude <= moveInputDeadZone)
+            {
+                playerAnim.SetIsRunning(false);
+                return Vector3.zero;
+            }
+
+            isMoving = true;
+
+            Vector2 movementInput = input.normalized;
+            isRunning = input.magnitude > 400f;
+
+            playerAnim.SetDirection(movementInput);
+
+            bool isMovingStraightForward = isRunning &&
+                                            movementInput.y > 0.7f &&
+                                            Mathf.Abs(movementInput.x) < 0.3f;
+
+            float moveSpeed = isRunning ? runSpeed : walkSpeed;
+
+            if (isJumping)
+            {
+                moveSpeed *= 0.9f;
+                playerAnim.SetIsRunning(false);
+            }
+            else
+            {
+                bool shouldRun = isMovingStraightForward;
+                playerAnim.SetIsRunning(shouldRun);
+
+                float speedMultiplier = 1f;
+                if (!shouldRun && isRunning)
+                    speedMultiplier = 1.5f;
+
+                playerAnim.SetSpeedMultiplier(speedMultiplier);
+            }
+
+            Vector2 movementDirection = movementInput * moveSpeed * Time.deltaTime;
+            SoundManager.Instance.PlayFootStepSounds(isRunning && !isJumping);
+
+            return transform.right * movementDirection.x + transform.forward * movementDirection.y;
         }
-        else if (isRunning)
-        {
-            playerAnim.SetIsRunning(true);
-            speedMultiplier = 1.5f;
-        }
-        else
-        {
-            playerAnim.SetIsRunning(false);
-            speedMultiplier = 1f;
-        }
-
-        playerAnim.SetSpeedMultiplier(speedMultiplier);
-    }
-
-    Vector2 movementDirection = movementInput * moveSpeed * Time.deltaTime;
-
-    // === Truyền trạng thái mệt và chạy vào FootStepSound ===
-    bool shouldPlayRunSound = isRunning && !isJumping && isMovingStraightForward;
-    SoundManager.Instance.PlayFootStepSounds(shouldPlayRunSound, isTired);
-
-    return transform.right * movementDirection.x + transform.forward * movementDirection.y;
-}
 
         private IEnumerator PerformTurn(string triggerName)
         {
@@ -375,7 +331,7 @@ private Vector3 GetMovementVector()
 
         private void Jump()
         {
-            if (IsGrounded() && !playerController.IsDead)
+            if (IsGrounded() && !playerController.IsDead && !pauseMenuPanel.activeSelf)
             {
                 isJumping = true;
                 verticalVelocity.y = jumpForce;
@@ -519,6 +475,11 @@ private Vector3 GetMovementVector()
         {
             idleBobAmount = value;
             walkBobAmount = value;
+        }
+
+        public bool IsJumping()
+        {
+            return isJumping;
         }
     }
 }

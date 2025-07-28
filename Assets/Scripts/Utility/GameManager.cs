@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -8,7 +9,30 @@ public class GameManager : MonoBehaviour
     {
         Application.targetFrameRate = 144;
         QualitySettings.vSyncCount = 0;
+
+        CheckpointData data = SaveManager.Instance.LoadCheckpoint();
+        if (data == null) return;
+
+        if (data.sceneName != SceneManager.GetActiveScene().name) return;
+
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player == null)
+        {
+            // Debug.LogError("Player not found in scene.");
+            return;
+        }
+
+        player.transform.position = new Vector3(data.playerX, data.playerY, data.playerZ);
+
+        PlayerInventory inventory = player.GetComponent<PlayerInventory>();
+        if (inventory != null)
+        {
+            inventory.LoadInventoryFromCheckpoint(data);
+        }
+
+        // Debug.Log("Checkpoint loaded.");
     }
+
 
     void Update()
     {
@@ -34,7 +58,7 @@ public class GameManager : MonoBehaviour
         Rect rect = new Rect(padding, padding, textSize.x + 10, textSize.y + 4);
 
         Color previousColor = GUI.color;
-        GUI.color = new Color(0f, 0f, 0f, 0.5f); // Black, 50% transparent
+        GUI.color = new Color(0f, 0f, 0f, 0.5f);
         GUI.Box(rect, GUIContent.none);
         GUI.color = previousColor;
 

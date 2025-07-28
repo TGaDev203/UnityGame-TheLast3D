@@ -1,14 +1,19 @@
 using UnityEngine;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 public class SaveManager : MonoBehaviour
 {
     public static SaveManager Instance;
+    private string savePath;
 
     private void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
+            savePath = Application.persistentDataPath + "/checkpoint.dat";
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -16,19 +21,35 @@ public class SaveManager : MonoBehaviour
         }
     }
 
-    public void SaveBool(string key, bool value)
+    public void SaveCheckpoint(CheckpointData data)
     {
-        PlayerPrefs.SetInt(key, value ? 1 : 0);
-        PlayerPrefs.Save();
+        BinaryFormatter formatter = new BinaryFormatter();
+        FileStream stream = new FileStream(savePath, FileMode.Create);
+
+        formatter.Serialize(stream, data);
+        stream.Close();
     }
 
-    public bool LoadBool(string key)
+    public CheckpointData LoadCheckpoint()
     {
-        return PlayerPrefs.GetInt(key, 0) == 1;
+        if (File.Exists(savePath))
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            FileStream stream = new FileStream(savePath, FileMode.Open);
+
+            CheckpointData data = (CheckpointData)formatter.Deserialize(stream);
+            stream.Close();
+            return data;
+        }
+
+        return null;
     }
 
-    public void ClearAllData()
+    public void DeleteCheckpoint()
     {
-        PlayerPrefs.DeleteAll();
+        if (File.Exists(savePath))
+        {
+            File.Delete(savePath);
+        }
     }
 }
