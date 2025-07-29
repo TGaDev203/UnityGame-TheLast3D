@@ -31,6 +31,7 @@ public abstract class EnemyBase : MonoBehaviour
     protected Vector3 lastSeenPosition;
 
     [Header("References")]
+    [SerializeField] private PauseMenuManager pauseMenuManager;
     protected IEnemyAnimation enemyAnim;
     protected NavMeshAgent agent;
     protected Transform player;
@@ -73,9 +74,11 @@ public abstract class EnemyBase : MonoBehaviour
         if (distanceToPlayer < visionRange && canSee)
         {
             HandleChase();
+
         }
         else if (!agent.pathPending && agent.remainingDistance < 0.5f)
         {
+
             GoToNextPatrolPoint();
         }
         else if (agent.velocity.magnitude > 0.1f && !isLookingAround)
@@ -90,6 +93,7 @@ public abstract class EnemyBase : MonoBehaviour
 
     protected virtual void HandleChase()
     {
+        if (!pauseMenuManager.IsPaused()) SoundManager.Instance.PlayChaseSound(enemyAudioSource, soundProfile.chaseSound);
         agent.speed = enemyRunSpeed;
 
         if (!agent.pathPending && !isAttacking)
@@ -97,6 +101,7 @@ public abstract class EnemyBase : MonoBehaviour
             lastSeenPosition = player.position;
             agent.SetDestination(lastSeenPosition);
         }
+
     }
 
     protected virtual void GoToNextPatrolPoint()
@@ -106,6 +111,9 @@ public abstract class EnemyBase : MonoBehaviour
         agent.speed = enemyWalkSpeed;
         agent.destination = patrolPoints[currentPointIndex].position;
         currentPointIndex = (currentPointIndex + 1) % patrolPoints.Length;
+
+        if (!pauseMenuManager.IsPaused())
+            SoundManager.Instance.PlayVoice(enemyAudioSource, soundProfile.voiceSound);
     }
 
     protected virtual IEnumerator PerformPauseAction()
