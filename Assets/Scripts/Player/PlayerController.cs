@@ -14,7 +14,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Transform cameraDeathAnchor;
     [SerializeField] private Transform cameraTransform;
     [SerializeField] private Avatar deathAvatar;
-    [SerializeField] private GameObject crosshair;
 
     [Header("Fade Effect")]
     [SerializeField] private Image fadeImage;
@@ -25,6 +24,11 @@ public class PlayerController : MonoBehaviour
     private float damageTimer = 0f;
     private bool isDead = false;
     private BloodOverlay bloodOverlay;
+
+    [Header("Disable UI")]
+    [SerializeField] private GameObject crosshair;
+    [SerializeField] private GameObject pauseButton;
+    [SerializeField] private GameObject healthBarUI;
 
     [Header("Public Accessors")]
     public bool IsDead => isDead;
@@ -65,7 +69,6 @@ public class PlayerController : MonoBehaviour
 
             SoundManager.Instance.PlayBeingHitSound();
 
-            if (currentHealth - damage <= 0) SoundManager.Instance.PlayDieSound();
         }
     }
 
@@ -91,8 +94,9 @@ public class PlayerController : MonoBehaviour
     {
         if (isDead) return;
         isDead = true;
+        if (currentHealth == 0) SoundManager.Instance.PlayDieSound();
 
-        crosshair.SetActive(false);
+        DisableObject();
 
         Animator animator = GetComponent<Animator>();
         if (animator != null)
@@ -168,5 +172,12 @@ public class PlayerController : MonoBehaviour
                 anim.SetVelocity(0f);
             }
         }
+    }
+
+    private void DisableObject()
+    {
+        crosshair.SetActive(false);
+        pauseButton.SetActive(false);
+        healthBarUI.SetActive(false);
     }
 }
