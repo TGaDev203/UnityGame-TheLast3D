@@ -4,8 +4,10 @@ using System.Collections;
 
 public abstract class EnemyBase : MonoBehaviour
 {
+    [Header("Sound")]
     [SerializeField] protected EnemySoundProfile soundProfile;
     [SerializeField] protected AudioSource enemyAudioSource;
+    protected AudioSource audioSource;
 
     [Header("General Settings")]
     [SerializeField] protected float attackRange;
@@ -17,18 +19,21 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField] protected float visionRange;
     [SerializeField] protected float viewAngle;
     [SerializeField] protected Transform[] patrolPoints;
+
+    [Header("AI Runtime State")]
     protected bool isLookingAround = false;
     protected bool isAttacking = false;
     protected float currentVelocity = 0f;
     protected float memoryTimer = 0f;
     protected float nextPauseActionTime = 0f;
     protected float timeSinceLastPauseAction = 0f;
-    protected AudioSource audioSource;
     protected int currentPointIndex = 0;
+    protected Vector3 lastSeenPosition;
+
+    [Header("References")]
     protected IEnemyAnimation enemyAnim;
     protected NavMeshAgent agent;
     protected Transform player;
-    protected Vector3 lastSeenPosition;
 
     protected virtual void Awake()
     {
@@ -182,28 +187,4 @@ public abstract class EnemyBase : MonoBehaviour
         isAttacking = false;
         agent.isStopped = false;
     }
-
-    // protected void TryPlayVoice()
-    // {
-    //     if (soundProfile != null && soundProfile.voiceSound != null)
-    //     {
-    //         SoundManager.Instance.PlayVoice(audioSource, soundProfile.voiceSound);
-    //     }
-    // }
-
-    // protected void TryPlayChaseSound()
-    // {
-    //     if (soundProfile != null)
-    //     {
-    //         SoundManager.Instance.PlayChaseSound(soundProfile.chaseSound);
-    //     }
-    // }
-
-    // protected void TryStopChaseSound()
-    // {
-    //     if (soundProfile != null)
-    //     {
-    //         SoundManager.Instance.StopChaseSound(soundProfile.chaseSound);
-    //     }
-    // }
 }

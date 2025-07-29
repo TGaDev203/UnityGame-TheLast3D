@@ -3,6 +3,7 @@ using UnityEngine.UI;
 
 public class OptionMenuManager : MonoBehaviour
 {
+    [Header("Audio Slider")]
     [SerializeField] private Slider bgmSlider;
     [SerializeField] private Slider sfxSlider;
 

@@ -5,28 +5,35 @@ namespace UnityStandardAssets.Characters.FirstPerson
 {
     public class FirstPersonController : MonoBehaviour
     {
-        [SerializeField] private float animationSmoothTime;
-        [SerializeField] private float cameraSensitivity;
-        [SerializeField] private float fallMultiplier;
-        [SerializeField] private float groundCheckRadius;
+        [Header("Movement Settings")]
+        [SerializeField] private float walkSpeed;
+        [SerializeField] private float runSpeed;
+        [SerializeField] private float jumpForce;
         [SerializeField] private float gravity;
+        [SerializeField] private float fallMultiplier;
+        [SerializeField] private float moveInputDeadZone;
+        [SerializeField] private float smoothTime;
+
+        [Header("Camera & Rotation")]
+        [SerializeField] private float cameraSensitivity;
+        [SerializeField] private float rotationThreshold;
+        [SerializeField] private float swipeSpeedThreshold;
+        [SerializeField] private Transform cameraTransform;
+
+        [Header("Bobbing Settings")]
         [SerializeField] private float idleBobAmount;
         [SerializeField] private float idleBobSpeed;
-        [SerializeField] private float jumpForce;
-        [SerializeField] private float moveInputDeadZone;
-        [SerializeField] private float runBobAmount;
         [SerializeField] private float runBobSpeed;
-        [SerializeField] private float runSpeed;
-        [SerializeField] private float smoothTime;
-        [SerializeField] private float swipeSpeedThreshold;
-        [SerializeField] private float rotationThreshold;
+        [SerializeField] private float runBobAmount;
         [SerializeField] private float walkBobAmount;
         [SerializeField] private float walkBobSpeed;
-        [SerializeField] private float walkSpeed;
+
+        [Header("Ground Check")]
         [SerializeField] private LayerMask groundLayer;
-        [SerializeField] private Transform cameraTransform;
         [SerializeField] private Transform groundCheck;
-        [SerializeField] private GameObject pauseMenuPanel;
+        [SerializeField] private float groundCheckRadius;
+
+        [Header("State Flags")]
         private bool canLookAround = true;
         private bool hasStarted = false;
         private bool isTurning = false;
@@ -35,28 +42,40 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private bool isRunning = false;
         private bool wasGrounded = false;
         private bool wasGroundedLastFrame = false;
+
+        [Header("Input Tracking")]
+        private float halfScreenWidth;
+        private float lastTapTime = 0f;
+        private const float doubleTapThreshold = 0.15f;
+        private int leftFingerId, rightFingerId;
+        private Vector2 input;
+        private Vector2 lookInput;
+        private Vector2 moveTouchStartPosition;
+
+        [Header("Rotation & Movement Internals")]
         private float bodyRotationY;
         private float bodyTurnSpeed = 150f;
         private float bobTimer = 0f;
         private float bodyYaw;
-        private const float doubleTapThreshold = 0.15f;
-        private float halfScreenWidth;
-        private float lastTapTime = 0f;
-        private int leftFingerId, rightFingerId;
-        private int turnLayerIndex;
-        private Vector3 verticalVelocity;
         private Vector2 currentRotation;
-        private Vector2 input;
-        private Vector2 lookInput;
-        private Vector2 moveTouchStartPosition;
-        private Vector2 rotationVelocity;
         private Vector2 targetRotation;
+        private Vector2 rotationVelocity;
+        private Vector3 verticalVelocity;
         private Vector3 originalCameraLocalPos;
+
+        [Header("References")]
         private Animator animator;
         private CharacterController characterController;
         private PlayerAnimationController playerAnim;
         private PlayerController playerController;
         private PlayerInteractor playerInteractor;
+        private int turnLayerIndex;
+
+        [Header("Animation")]
+        [SerializeField] private float animationSmoothTime;
+
+        [Header("UI References")]
+        [SerializeField] private GameObject pauseMenuPanel;
 
         public void DisableLookAround() => canLookAround = false;
         private void TriggerTurnRight() => StartCoroutine(PerformTurn("turnRight"));
@@ -270,6 +289,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 }
             }
         }
+
         private Vector3 GetMovementVector()
         {
             if (playerController.IsDead || input.sqrMagnitude <= moveInputDeadZone)

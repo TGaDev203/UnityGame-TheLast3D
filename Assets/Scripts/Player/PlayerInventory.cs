@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class PlayerInventory : MonoBehaviour
 {
+    [Header("Inventory Flags")]
     public bool hasKey = false;
     public bool hasDynamite = false;
     public bool hasLighter = false;

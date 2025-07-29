@@ -3,9 +3,12 @@ using UnityEngine;
 
 public class BloodOverlay : MonoBehaviour
 {
+	[Header("Overlay Settings")]
 	[SerializeField] private GameObject[] overlayLevels;
-	[SerializeField] private float fadeDelay = 0.5f;
-	[SerializeField] private float autoHideDelay = 5f;
+
+	[Header("Overlay Timings")]
+	[SerializeField] private float fadeDelay;
+	[SerializeField] private float autoHideDelay;
 
 	private Coroutine fadeCoroutine;
 	private Coroutine autoHideCoroutine;

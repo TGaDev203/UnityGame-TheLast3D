@@ -7,8 +7,8 @@ using UnityStandardAssets.Characters.FirstPerson;
 public class PlayerController : MonoBehaviour
 {
     [Header("Health Settings")]
-    [SerializeField] private int maxHealth = 100;
-    [SerializeField] private float damageCooldown = 1f;
+    [SerializeField] private int maxHealth;
+    [SerializeField] private float damageCooldown;
 
     [Header("Death Settings")]
     [SerializeField] private Transform cameraDeathAnchor;
@@ -18,18 +18,24 @@ public class PlayerController : MonoBehaviour
 
     [Header("Fade Effect")]
     [SerializeField] private Image fadeImage;
-    [SerializeField] private float fadeDuration = 3f;
+    [SerializeField] private float fadeDuration;
 
-    private BloodOverlay bloodOverlay;
+    [Header("Runtime State")]
     private int currentHealth;
     private float damageTimer = 0f;
     private bool isDead = false;
+    private BloodOverlay bloodOverlay;
 
+    [Header("Public Accessors")]
     public bool IsDead => isDead;
+
+    [Header("References")]
+    private HealthBarManager healthBar;
 
     private void Awake()
     {
         bloodOverlay = FindAnyObjectByType<BloodOverlay>();
+        healthBar = FindAnyObjectByType<HealthBarManager>();
     }
 
     private void Start()
@@ -37,6 +43,8 @@ public class PlayerController : MonoBehaviour
         currentHealth = maxHealth;
         bloodOverlay?.UpdateOverlay(currentHealth, maxHealth);
         SetFadeAlpha(0);
+        healthBar.SetMaxHealth(maxHealth);
+        healthBar.SetHealth(currentHealth);
     }
 
     private void Update()
@@ -67,10 +75,11 @@ public class PlayerController : MonoBehaviour
 
         currentHealth -= damage;
         currentHealth = Mathf.Max(currentHealth, 0);
+        healthBar.SetHealth(currentHealth);
 
         bloodOverlay?.UpdateOverlay(currentHealth, maxHealth);
 
-        Debug.Log($"Player took {damage} damage. Current HP: {currentHealth}");
+        // Debug.Log($"Player took {damage} damage. Current HP: {currentHealth}");
 
         if (currentHealth <= 0)
         {

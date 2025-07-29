@@ -6,15 +6,18 @@ public class SoundManager : MonoBehaviour
 {
     public static SoundManager Instance { get; private set; }
 
+    [Header("Audio Sources")]
     public AudioSource backgroundAudioSource;
     public AudioSource soundEffectAudioSource;
 
+    [Header("Audio Clips")]
     [SerializeField] private AudioClip button_01Sound;
     [SerializeField] private AudioClip button_02Sound;
     [SerializeField] private AudioClip beingHitSound;
     [SerializeField] private AudioClip closeDoorSound;
     [SerializeField] private AudioClip closeChestSound;
     [SerializeField] private AudioClip dieSound;
+    [SerializeField] private AudioClip explosionSound;
     [SerializeField] private AudioClip endSound;
     [SerializeField] private AudioClip gamePlaySound;
     [SerializeField] private AudioClip jumpSound;
@@ -25,14 +28,10 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private AudioClip openDoorSound;
     [SerializeField] private AudioClip openChestSound;
     [SerializeField] private AudioClip pickupSound;
-    [SerializeField] private AudioClip[] footStepSounds;
-    [SerializeField] private float footstepInterval;
-    private const int MAINMENU_INDEX = 0;
-    private const int GAMEPLAY_INDEX = 1;
-    private FirstPersonController firstPersonController;
-    private static bool hasPlayedKnockSound = false;
 
     [Header("Footstep")]
+    [SerializeField] private AudioClip[] footStepSounds;
+    [SerializeField] private float footstepInterval;
     private bool isFootstepSoundMuted = false;
     private bool isJumpSoundMuted = false;
     private float footstepTimer;
@@ -41,10 +40,15 @@ public class SoundManager : MonoBehaviour
 
     [Header("Tired Sound")]
     [SerializeField] private AudioClip tiredBreathSound;
-    [SerializeField] private float tiredThreshold = 6f;
-    [SerializeField] private float tiredCooldown = 3f;
+    [SerializeField] private float tiredThreshold;
+    [SerializeField] private float tiredCooldown;
     private float runningStartTime = -1f;
     private float nextTiredSoundTime = 0f;
+
+    [Header("Internal State")]
+    private const int MAINMENU_INDEX = 0;
+    private const int GAMEPLAY_INDEX = 1;
+    private FirstPersonController firstPersonController;
 
     public void PlayButton_01Sound() => PlayOneShotSound(button_01Sound);
     public void PlayButton_02Sound() => PlayOneShotSound(button_02Sound);
@@ -52,13 +56,13 @@ public class SoundManager : MonoBehaviour
     public void PlayCloseChestSound() => PlayOneShotSound(closeChestSound);
     public void PlayCloseDoorSound() => PlayOneShotSound(closeDoorSound);
     public void PlayDieSound() => PlayOneShotSound(dieSound);
-    public void PlayPickupSound() => PlayOneShotSound(pickupSound);
+    public void PlayExplosionSound() => PlayOneShotSound(explosionSound);
     public void PlayLockedSound() => PlayOneShotSound(lockedSound);
     public void PlayLandSound() => PlayOneShotSound(landSound);
     public void PlayOpenChestSound() => PlayOneShotSound(openChestSound);
     public void PlayOpenDoorSound() => PlayOneShotSound(openDoorSound);
+    public void PlayPickupSound() => PlayOneShotSound(pickupSound);
     public void PlayTiredBreathSound() => PlayOneShotSound(tiredBreathSound);
-    public void Play() => PlayOneShotSound(mainMenuSound);
 
     private void Awake()
     {
@@ -67,14 +71,16 @@ public class SoundManager : MonoBehaviour
         else Destroy(gameObject);
 
         firstPersonController = FindAnyObjectByType<FirstPersonController>();
+
+        backgroundAudioSource.volume = PlayerPrefs.GetFloat("BGMVolume", 1f);
+        soundEffectAudioSource.volume = PlayerPrefs.GetFloat("SFXVolume", 1f);
     }
 
     private void Start()
     {
-        if (SceneManager.GetActiveScene().buildIndex == GAMEPLAY_INDEX && !hasPlayedKnockSound)
+        if (SceneManager.GetActiveScene().buildIndex == GAMEPLAY_INDEX)
         {
             PlayOneShotSound(knockDoorSound);
-            hasPlayedKnockSound = true;
         }
 
         PlayBackgroundSound();
@@ -170,6 +176,15 @@ public class SoundManager : MonoBehaviour
         }
     }
 
+    public void StopCloseChestSound()
+    {
+        if (openChestSound != null)
+        {
+            soundEffectAudioSource.clip = openChestSound;
+            soundEffectAudioSource.Stop();
+        }
+    }
+
     public void PlayVoice(AudioSource source, AudioClip clip)
     {
         if (clip == null || source == null) return;
@@ -197,7 +212,8 @@ public class SoundManager : MonoBehaviour
     public void SetBackgroundMusicVolume(float value)
     {
         backgroundAudioSource.volume = value;
-        PlayerPrefs.SetFloat("musicVolume", value);
+        PlayerPrefs.SetFloat("BGMVolume", value);
+        PlayerPrefs.Save();
     }
 
     public float GetSFXVolume()
@@ -205,10 +221,12 @@ public class SoundManager : MonoBehaviour
         return soundEffectAudioSource.volume;
     }
 
+
     public void SetSFXVolume(float value)
     {
         soundEffectAudioSource.volume = value;
-        PlayerPrefs.SetFloat("sfxVolume", value);
+        PlayerPrefs.SetFloat("SFXVolume", value);
+        PlayerPrefs.Save();
     }
 
     public void SetSFXMuted(bool value)
