@@ -30043,6 +30043,7 @@ MonoBehaviour:
   - {fileID: 2098571564}
   - {fileID: 419105704}
   - {fileID: 1269320387}
+  pauseMenuManager: {fileID: 823566887}
 --- !u!195 &796336778
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -36622,7 +36623,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!82 &1213367125
 AudioSource:
   m_ObjectHideFlags: 0
@@ -36644,8 +36645,8 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 1
-  MinDistance: 9.9009905
-  MaxDistance: 10
+  MinDistance: 6
+  MaxDistance: 8
   Pan2D: 0
   rolloffMode: 0
   BypassEffects: 0
@@ -36882,6 +36883,7 @@ MonoBehaviour:
   - {fileID: 495130917}
   - {fileID: 685960594}
   - {fileID: 266733977}
+  pauseMenuManager: {fileID: 823566887}
 --- !u!114 &1213367135
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -59956,7 +59958,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!54 &919132147531945850
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -60303,6 +60305,7 @@ MonoBehaviour:
   - {fileID: 1950774769}
   - {fileID: 1610625550}
   - {fileID: 814520775}
+  pauseMenuManager: {fileID: 823566887}
 --- !u!195 &919132148565666506
 NavMeshAgent:
   m_ObjectHideFlags: 0

@@ -7,6 +7,11 @@ public class PauseMenuManager : BaseMenuManager
     [SerializeField] private GameObject pauseMenuPanel;
     [SerializeField] private GameObject optionsMenuPanel;
 
+    [Header("State Flags")]
+    private bool isPaused = false;
+
+    public bool IsPaused() => isPaused;
+
     protected void Awake()
     {
         pauseMenuPanel?.SetActive(true);
@@ -14,8 +19,10 @@ public class PauseMenuManager : BaseMenuManager
 
     public void ShowPauseMenu()
     {
+        isPaused = true;
         SoundManager.Instance.PlayButton_02Sound();
         SoundManager.Instance.SetSFXMuted(true);
+        SoundManager.Instance.PauseAllSounds();
         Time.timeScale = 0f;
         HideOptions();
         pauseMenuPanel?.SetActive(true);
@@ -42,8 +49,10 @@ public class PauseMenuManager : BaseMenuManager
     {
         if (pauseMenuPanel.activeSelf)
         {
+            isPaused = false;
             SoundManager.Instance.PlayButton_01Sound();
             SoundManager.Instance.SetSFXMuted(false);
+            SoundManager.Instance.ResumeAllSounds();
             pauseMenuPanel.SetActive(false);
             Time.timeScale = 1f;
         }

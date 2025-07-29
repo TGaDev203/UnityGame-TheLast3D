@@ -154,28 +154,6 @@ public class SoundManager : MonoBehaviour
         PlayOneShotSound(jumpSound);
     }
 
-    public void PlayChaseSound(AudioClip clip)
-    {
-        if (clip == null) return;
-
-        if (soundEffectAudioSource.clip == clip && soundEffectAudioSource.isPlaying) return;
-
-        soundEffectAudioSource.loop = true;
-        soundEffectAudioSource.clip = clip;
-        soundEffectAudioSource.Play();
-    }
-
-    public void StopChaseSound(AudioClip clip)
-    {
-        if (clip == null) return;
-
-        if (soundEffectAudioSource.clip == clip && soundEffectAudioSource.isPlaying)
-        {
-            soundEffectAudioSource.loop = false;
-            soundEffectAudioSource.Stop();
-        }
-    }
-
     public void StopCloseChestSound()
     {
         if (openChestSound != null)
@@ -194,15 +172,6 @@ public class SoundManager : MonoBehaviour
         source.Play();
     }
 
-    public void PlayEndSound()
-    {
-        soundEffectAudioSource.Stop();
-        if (endSound == null) return;
-
-        backgroundAudioSource.loop = true;
-        backgroundAudioSource.clip = endSound;
-        backgroundAudioSource.Play();
-    }
 
     public float GetBackgroundMusicVolume()
     {
@@ -221,7 +190,6 @@ public class SoundManager : MonoBehaviour
         return soundEffectAudioSource.volume;
     }
 
-
     public void SetSFXVolume(float value)
     {
         soundEffectAudioSource.volume = value;
@@ -233,6 +201,16 @@ public class SoundManager : MonoBehaviour
     {
         isFootstepSoundMuted = value;
         isJumpSoundMuted = value;
+    }
+
+    public void PlayEndSound()
+    {
+        soundEffectAudioSource.Stop();
+        if (endSound == null) return;
+
+        backgroundAudioSource.loop = true;
+        backgroundAudioSource.clip = endSound;
+        backgroundAudioSource.Play();
     }
 
     public void PlayChaseSound(AudioSource source, AudioClip clip)
@@ -254,6 +232,40 @@ public class SoundManager : MonoBehaviour
         {
             source.loop = false;
             source.Stop();
+        }
+    }
+
+    public void PauseAllSounds()
+    {
+        if (backgroundAudioSource.isPlaying)
+            backgroundAudioSource.Pause();
+
+        if (soundEffectAudioSource.isPlaying)
+            soundEffectAudioSource.Pause();
+
+        foreach (AudioSource src in FindObjectsByType<AudioSource>(FindObjectsSortMode.None))
+        {
+            if (src.isPlaying && src != backgroundAudioSource && src != soundEffectAudioSource)
+            {
+                src.Pause();
+            }
+        }
+    }
+
+    public void ResumeAllSounds()
+    {
+        if (backgroundAudioSource.clip != null && !backgroundAudioSource.isPlaying)
+            backgroundAudioSource.UnPause();
+
+        if (soundEffectAudioSource.clip != null && !soundEffectAudioSource.isPlaying)
+            soundEffectAudioSource.UnPause();
+
+        foreach (AudioSource src in FindObjectsByType<AudioSource>(FindObjectsSortMode.None))
+        {
+            if (src.clip != null && !src.isPlaying && src != backgroundAudioSource && src != soundEffectAudioSource)
+            {
+                src.UnPause();
+            }
         }
     }
 }
