@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,22 +24,36 @@ public class PlayerInteractor : MonoBehaviour
     [SerializeField] private GameObject stoneToDestroy;
     [SerializeField] private GameObject endScreen;
 
+    [Header("Runtime State")]
     private bool canToggle = true;
     private bool isPlayerNearby = false;
     private bool hasPlacedDynamite = false;
     private bool hasExploded = false;
+    private bool isInDynamiteZone = false;
+    private float interactCooldown = 1f;
+    private GameObject placedDynamite;
     private InteractableType currentInteractableType = InteractableType.None;
     private ItemPickup detectedItem;
     private ChestController detectedChest;
     private DoorController detectedDoor;
-    private float interactCooldown = 1f;
-    private GameObject placedDynamite;
-    private bool isInDynamiteZone = false;
     private PlayerInventory inventory;
+
     public bool HasPlacedDynamite => hasPlacedDynamite;
     public bool HasExploded => hasExploded;
+    public bool IsInDynamiteZone => isInDynamiteZone;
+
     private void Start()
     {
+        var checkpoint = SaveManager.Instance.LoadCheckpoint();
+        if (checkpoint == null)
+        {
+            NotificationManager.Instance.ShowWelcomeMessage();
+        }
+        else
+        {
+            NotificationManager.Instance.ShowReturningPlayerMessage();
+        }
+
         LoadCheckpointState();
 
         inventory = GetComponent<PlayerInventory>();
@@ -54,7 +69,6 @@ public class PlayerInteractor : MonoBehaviour
         }
     }
 
-
     private void Update()
     {
         CheckForInteractables();
@@ -68,12 +82,25 @@ public class PlayerInteractor : MonoBehaviour
         UpdateIgniteButtonVisibility();
     }
 
-
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("DynamiteZone"))
         {
             isInDynamiteZone = true;
+
+            if (hasExploded)
+            {
+                return;
+            }
+
+            if (inventory.hasDynamite && inventory.hasLighter && isInDynamiteZone)
+            {
+                NotificationManager.Instance.ShowReadyToIgniteMessage();
+            }
+            else
+            {
+                NotificationManager.Instance.ShowMissingItemWarning();
+            }
         }
     }
 
@@ -236,6 +263,7 @@ public class PlayerInteractor : MonoBehaviour
 
         if (stoneToDestroy != null)
         {
+            SoundManager.Instance.PlayExplosionSound();
             Destroy(stoneToDestroy);
         }
 
@@ -254,23 +282,47 @@ public class PlayerInteractor : MonoBehaviour
     {
         hasPlacedDynamite = data.hasPlacedDynamite;
         hasExploded = data.hasExploded;
+
+        inventory = GetComponent<PlayerInventory>();
         inventory.hasKey = data.hasKey;
         inventory.hasDynamite = data.hasDynamite;
         inventory.hasLighter = data.hasLighter;
 
-        if (data.hasExploded && stoneToDestroy != null)
+        transform.position = new Vector3(data.playerX, data.playerY, data.playerZ);
+
+        if (hasExploded && stoneToDestroy != null)
         {
             Destroy(stoneToDestroy);
+            igniteIcon?.gameObject.SetActive(false);
         }
 
-        if (data.hasPlacedDynamite && !data.hasExploded)
+        if (hasPlacedDynamite && !hasExploded && placedDynamite == null)
         {
             placedDynamite = Instantiate(dynamitePrefab, dynamitePlacePoint.position, Quaternion.identity);
         }
 
-        transform.position = new Vector3(data.playerX, data.playerY, data.playerZ);
-    }
+        ChestController[] allChests = FindObjectsByType<ChestController>(FindObjectsSortMode.None);
+        foreach (var chest in allChests)
+        {
+            ChestSaveData saveData = chest.GetChestSaveData();
+            if (saveData == null) continue;
 
+            ChestStateData matchingData = data.chestStates.Find(c => c.chestID == saveData.chestID);
+            if (matchingData != null)
+            {
+                ChestSaveData chestSaveData = new ChestSaveData
+                {
+                    chestID = matchingData.chestID,
+                    isOpen = matchingData.isOpen,
+                    wasUnlocked = matchingData.wasUnlocked,
+                    padlockRemoved = matchingData.padlockRemoved
+                };
+
+                chest.LoadChestSaveData(chestSaveData);
+            }
+        }
+        SoundManager.Instance.StopCloseChestSound();
+    }
 
     public void SaveCheckpoint()
     {
@@ -284,32 +336,32 @@ public class PlayerInteractor : MonoBehaviour
             sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name,
             playerX = transform.position.x,
             playerY = transform.position.y,
-            playerZ = transform.position.z
+            playerZ = transform.position.z,
+            chestStates = new List<ChestStateData>()
         };
+
+        ChestController[] allChests = FindObjectsByType<ChestController>(FindObjectsSortMode.None);
+        foreach (var chest in allChests)
+        {
+            var chestData = chest.GetChestSaveData();
+
+            data.chestStates.Add(new ChestStateData
+            {
+                chestID = chestData.chestID,
+                isOpen = chestData.isOpen,
+                wasUnlocked = chestData.wasUnlocked,
+                padlockRemoved = chestData.padlockRemoved
+            });
+        }
 
         SaveManager.Instance.SaveCheckpoint(data);
     }
+
     private void LoadCheckpointState()
     {
         CheckpointData data = SaveManager.Instance.LoadCheckpoint();
         if (data == null) return;
 
-        hasPlacedDynamite = data.hasPlacedDynamite;
-        hasExploded = data.hasExploded;
-
-        if (hasExploded)
-        {
-            if (stoneToDestroy != null)
-            {
-                Destroy(stoneToDestroy);
-            }
-            igniteIcon?.gameObject.SetActive(false);
-            return;
-        }
-
-        if (hasPlacedDynamite && placedDynamite == null)
-        {
-            placedDynamite = Instantiate(dynamitePrefab, dynamitePlacePoint.position, Quaternion.identity);
-        }
+        RestoreStateFromCheckpoint(data);
     }
 }

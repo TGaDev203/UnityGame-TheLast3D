@@ -5,6 +5,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 public class SaveManager : MonoBehaviour
 {
     public static SaveManager Instance;
+
     private string savePath;
 
     private void Awake()
@@ -51,5 +52,11 @@ public class SaveManager : MonoBehaviour
         {
             File.Delete(savePath);
         }
+    }
+
+    public static bool HasCheckpoint()
+    {
+        string path = Application.persistentDataPath + "/checkpoint.dat";
+        return File.Exists(path);
     }
 }

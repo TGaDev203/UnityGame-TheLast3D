@@ -4,8 +4,10 @@ using UnityEngine.AI;
 
 public class DoorController : MonoBehaviour
 {
+    [Header("References")]
     [SerializeField] private NavMeshObstacle navObstacle;
     [SerializeField] private Transform doorLeaf;
+    private PlayerInteractor playerInteractor;
 
     [Header("Door Settings")]
     [SerializeField] private float openAngle;
@@ -13,9 +15,9 @@ public class DoorController : MonoBehaviour
     [SerializeField] private float openDuration;
     [SerializeField] private bool invertRotation = false;
 
+    [Header("Door State")]
     private bool isOpen = false;
     private Coroutine rotateRoutine;
-    private PlayerInteractor playerInteractor;
 
     private void Awake()
     {
@@ -32,6 +34,7 @@ public class DoorController : MonoBehaviour
     {
         if (CompareTag("MainDoor"))
         {
+            Time.timeScale = 0f;
             playerInteractor.SetEndScreenActive();
             SoundManager.Instance.soundEffectAudioSource.Stop();
             SoundManager.Instance.PlayEndSound();
@@ -40,6 +43,7 @@ public class DoorController : MonoBehaviour
         if (CompareTag("Locked"))
         {
             SoundManager.Instance.PlayLockedSound();
+            NotificationManager.Instance.ShowLockedMessage();
             return;
         }
 

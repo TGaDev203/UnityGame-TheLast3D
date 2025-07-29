@@ -11,6 +11,7 @@ public class ParallaxLayer : MonoBehaviour
     [SerializeField] private float animationSpeed;
     [SerializeField] private float animationOffset;
 
+    [Header("Internal State")]
     private Vector3 startPosition;
 
     void Start()

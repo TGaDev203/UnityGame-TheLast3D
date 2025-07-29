@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3371a4acd0c08ba4ca956e3e946fc19d, type: 3}
   m_Name: Claw Zombie Sound Profile
   m_EditorClassIdentifier: 
-  chaseSound: {fileID: 0}
+  chaseSound: {fileID: 8300000, guid: ece289d346927e54f8072d024f324721, type: 3}
   attackSound: {fileID: 0}
-  voiceSound: {fileID: 0}
+  voiceSound: {fileID: 8300000, guid: c9bfe708bb248124590913415c90f7c0, type: 3}
   pauseActionSound: {fileID: 0}

@@ -3,6 +3,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Enemy/Enemy Sound Profile")]
 public class EnemySoundProfile : ScriptableObject
 {
+    [Header("Core Sounds")]
     public AudioClip chaseSound;
     public AudioClip attackSound;
 

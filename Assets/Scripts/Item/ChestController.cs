@@ -1,13 +1,25 @@
 using System.Collections;
 using UnityEngine;
 
+[System.Serializable]
+public class ChestSaveData
+{
+    public string chestID;
+    public bool isOpen;
+    public bool wasUnlocked;
+    public bool padlockRemoved;
+}
+
 public class ChestController : MonoBehaviour
 {
+    [Header("Chest Settings")]
     [SerializeField] private Transform chestLid;
     [SerializeField] private float closeAngle;
     [SerializeField] private float openAngle;
     [SerializeField] private float openDuration;
+    [SerializeField] private string chestID;
 
+    [Header("Chest State")]
     private bool isOpen = false;
     private Coroutine rotateRoutine;
 
@@ -16,11 +28,13 @@ public class ChestController : MonoBehaviour
         if (CompareTag("Locked") && !ItemPickup.PlayerHasKey())
         {
             SoundManager.Instance.PlayLockedSound();
+            NotificationManager.Instance.ShowLockedMessage();
             return;
         }
 
         else if (CompareTag("Locked") && ItemPickup.PlayerHasKey())
         {
+            NotificationManager.Instance.ShowUnlockedMessage();
             UnlockChest();
         }
 
@@ -83,16 +97,49 @@ public class ChestController : MonoBehaviour
         tag = "Unlocked";
     }
 
-    public void LoadChestState(bool shouldBeOpen, bool wasUnlocked)
+    public ChestSaveData GetChestSaveData()
     {
-        if (wasUnlocked && CompareTag("Locked"))
+        bool hasPadlock = false;
+        foreach (Transform child in transform)
+        {
+            if (child.CompareTag("Padlock"))
+            {
+                hasPadlock = true;
+                break;
+            }
+        }
+
+        return new ChestSaveData
+        {
+            chestID = chestID,
+            isOpen = isOpen,
+            wasUnlocked = CompareTag("Unlocked"),
+            padlockRemoved = !hasPadlock
+        };
+    }
+
+    public void LoadChestSaveData(ChestSaveData data)
+    {
+        if (data.wasUnlocked && CompareTag("Locked"))
         {
             UnlockChest();
         }
 
-        if (isOpen != shouldBeOpen)
+        if (isOpen != data.isOpen)
         {
-            SetChestOpenState(shouldBeOpen);
+            SetChestOpenState(data.isOpen);
+        }
+
+        if (data.padlockRemoved)
+        {
+            foreach (Transform child in transform)
+            {
+                if (child.CompareTag("Padlock"))
+                {
+                    Destroy(child.gameObject);
+                    break;
+                }
+            }
         }
     }
 }

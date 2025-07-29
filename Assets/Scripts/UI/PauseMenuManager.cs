@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class PauseMenuManager : BaseMenuManager
 {
+    [Header("UI Panels")]
     [SerializeField] private GameObject pauseMenuPanel;
     [SerializeField] private GameObject optionsMenuPanel;
 

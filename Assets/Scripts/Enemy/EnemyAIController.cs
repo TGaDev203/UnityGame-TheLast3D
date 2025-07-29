@@ -34,6 +34,7 @@ public class EnemyAIController : EnemyBase
 
     protected override IEnumerator PerformPauseAction()
     {
+        SoundManager.Instance.PlayVoice(enemyAudioSource, soundProfile.pauseActionSound);
         enemyAnim.SetVelocity(0f);
         enemyAnim.PerformPauseAction(true);
         yield return base.PerformPauseAction();

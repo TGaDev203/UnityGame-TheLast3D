@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3371a4acd0c08ba4ca956e3e946fc19d, type: 3}
   m_Name: Mummy Zombie Sound Profile
   m_EditorClassIdentifier: 
-  chaseSound: {fileID: 0}
+  chaseSound: {fileID: 8300000, guid: 7fce6275ff125be4494e9808c731dbf9, type: 3}
   attackSound: {fileID: 0}
-  voiceSound: {fileID: 0}
+  voiceSound: {fileID: 8300000, guid: 91edbc65a92c57341a68b1058f2b8955, type: 3}
   pauseActionSound: {fileID: 0}
