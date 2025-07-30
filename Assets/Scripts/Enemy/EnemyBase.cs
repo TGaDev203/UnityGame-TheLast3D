@@ -93,7 +93,12 @@ public abstract class EnemyBase : MonoBehaviour
 
     protected virtual void HandleChase()
     {
-        if (!pauseMenuManager.IsPaused()) SoundManager.Instance.PlayChaseSound(enemyAudioSource, soundProfile.chaseSound);
+        var checkpoint = SaveManager.Instance.LoadCheckpoint();
+        if (!pauseMenuManager.IsPaused() && (checkpoint == null || !checkpoint.isEnded))
+        {
+            SoundManager.Instance.PlayChaseSound(enemyAudioSource, soundProfile.chaseSound);
+        }
+
         agent.speed = enemyRunSpeed;
 
         if (!agent.pathPending && !isAttacking)
@@ -101,19 +106,21 @@ public abstract class EnemyBase : MonoBehaviour
             lastSeenPosition = player.position;
             agent.SetDestination(lastSeenPosition);
         }
-
     }
 
     protected virtual void GoToNextPatrolPoint()
     {
+        var checkpoint = SaveManager.Instance.LoadCheckpoint();
+        if (!pauseMenuManager.IsPaused() && (checkpoint == null || !checkpoint.isEnded))
+        {
+            SoundManager.Instance.PlayVoice(enemyAudioSource, soundProfile.voiceSound);
+        }
+
         if (patrolPoints.Length == 0) return;
 
         agent.speed = enemyWalkSpeed;
         agent.destination = patrolPoints[currentPointIndex].position;
         currentPointIndex = (currentPointIndex + 1) % patrolPoints.Length;
-
-        if (!pauseMenuManager.IsPaused())
-            SoundManager.Instance.PlayVoice(enemyAudioSource, soundProfile.voiceSound);
     }
 
     protected virtual IEnumerator PerformPauseAction()

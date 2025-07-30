@@ -75,7 +75,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private float animationSmoothTime;
 
         [Header("UI References")]
-        [SerializeField] private GameObject pauseMenuPanel;
+        [SerializeField] private PauseMenuManager pauseMenuPanel;
 
         public void DisableLookAround() => canLookAround = false;
         private void TriggerTurnRight() => StartCoroutine(PerformTurn("turnRight"));
@@ -351,29 +351,27 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private void Jump()
         {
-            if (IsGrounded() && !playerController.IsDead && !pauseMenuPanel.activeSelf)
+            if (!IsGrounded() || playerController.IsDead || pauseMenuPanel.IsPaused()) return;
+            isJumping = true;
+            verticalVelocity.y = jumpForce;
+
+            Vector2 movementInput = input.normalized;
+
+            int jumpType = 1;
+
+            if (movementInput.y > 0.5f && Mathf.Abs(movementInput.x) < 0.3f)
             {
-                isJumping = true;
-                verticalVelocity.y = jumpForce;
-
-                Vector2 movementInput = input.normalized;
-
-                int jumpType = 1;
-
-                if (movementInput.y > 0.5f && Mathf.Abs(movementInput.x) < 0.3f)
-                {
-                    jumpType = 2;
-                }
-                else if (movementInput.y < -0.3f)
-                {
-                    jumpType = 3;
-                }
-
-                playerAnim.SetJumpType(jumpType);
-                SoundManager.Instance.PlayJumpSound();
-
-                // Debug.Log("Jump triggered! Type: " + jumpType);
+                jumpType = 2;
             }
+            else if (movementInput.y < -0.3f)
+            {
+                jumpType = 3;
+            }
+
+            playerAnim.SetJumpType(jumpType);
+            SoundManager.Instance.PlayJumpSound();
+
+            // Debug.Log("Jump triggered! Type: " + jumpType);
         }
 
         private string CheckGroundTag()

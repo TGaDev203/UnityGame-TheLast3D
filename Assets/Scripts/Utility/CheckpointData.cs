@@ -25,4 +25,6 @@ public class CheckpointData
     public float playerX;
     public float playerY;
     public float playerZ;
+
+    public bool isEnded;
 }

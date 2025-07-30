@@ -79,6 +79,11 @@ public class NotificationManager : MonoBehaviour
         ShowMessage("Welcome back! Continue your escape... but beware the monsters.");
     }
 
+    public void ShowGameCompletedMessage()
+    {
+        ShowMessage("You've completed the game. Feel free to explore the map!");
+    }
+
     public void ShowPickedUpKey()
     {
         ShowMessage("You picked up a key!");
