@@ -1,4 +1,4 @@
-# 🧟 The Last 3D — Outlast-Inspired Horror Game Prototype
+# 🧟 The Last 3D — Outlast-Inspired Horror Game Prototype (Mobile Game)
 
 **The Last 3D** is my first 3D horror game — a short prototype built with **Unity 6**, inspired by the chilling atmosphere of *Outlast*.
 
