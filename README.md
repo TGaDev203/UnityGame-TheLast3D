@@ -28,7 +28,7 @@ It was created as part of my self-learning and exploration in 3D horror game des
 ## 🎮 Features
 
 - 👣 First-person controller with immersive movement
-- 👀 Stealth-based mechanics (hide and avoid enemies)
+- 👀 Enemy avoidance instead of direct combat
 - 🧠 Enemy AI: patrols, chases, and attacks the player
 - 🩸 Health system: player loses health when hit by enemies
 - 🩸 Blood effects for feedback and horror atmosphere
