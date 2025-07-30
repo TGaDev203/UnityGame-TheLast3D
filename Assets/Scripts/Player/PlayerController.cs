@@ -63,12 +63,10 @@ public class PlayerController : MonoBehaviour
     {
         if (other.CompareTag("Enemy") && damageTimer <= 0f && !isDead)
         {
-            int damage = 20;
+            int damage = 10;
             TakeDamage(damage);
             damageTimer = damageCooldown;
-
             SoundManager.Instance.PlayBeingHitSound();
-
         }
     }
 

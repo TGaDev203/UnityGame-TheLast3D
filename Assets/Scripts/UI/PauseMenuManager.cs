@@ -21,7 +21,6 @@ public class PauseMenuManager : BaseMenuManager
     {
         isPaused = true;
         SoundManager.Instance.PlayButton_02Sound();
-        SoundManager.Instance.SetSFXMuted(true);
         SoundManager.Instance.PauseAllSounds();
         Time.timeScale = 0f;
         HideOptions();
@@ -51,7 +50,6 @@ public class PauseMenuManager : BaseMenuManager
         {
             isPaused = false;
             SoundManager.Instance.PlayButton_01Sound();
-            SoundManager.Instance.SetSFXMuted(false);
             SoundManager.Instance.ResumeAllSounds();
             pauseMenuPanel.SetActive(false);
             Time.timeScale = 1f;

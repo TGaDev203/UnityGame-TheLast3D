@@ -42,6 +42,11 @@ public class PlayerInteractor : MonoBehaviour
     public bool HasExploded => hasExploded;
     public bool IsInDynamiteZone => isInDynamiteZone;
 
+    private void Awake()
+    {
+        inventory = GetComponent<PlayerInventory>();
+    }
+
     private void Start()
     {
         var checkpoint = SaveManager.Instance.LoadCheckpoint();
@@ -51,12 +56,17 @@ public class PlayerInteractor : MonoBehaviour
         }
         else
         {
-            NotificationManager.Instance.ShowReturningPlayerMessage();
+            if (checkpoint.isEnded)
+            {
+                NotificationManager.Instance.ShowGameCompletedMessage();
+            }
+            else
+            {
+                NotificationManager.Instance.ShowReturningPlayerMessage();
+            }
         }
 
         LoadCheckpointState();
-
-        inventory = GetComponent<PlayerInventory>();
 
         if (hasExploded && stoneToDestroy != null)
         {
@@ -68,6 +78,7 @@ public class PlayerInteractor : MonoBehaviour
             placedDynamite = Instantiate(dynamitePrefab, dynamitePlacePoint.position, Quaternion.identity);
         }
     }
+
 
     private void Update()
     {
@@ -275,7 +286,7 @@ public class PlayerInteractor : MonoBehaviour
     public void SetEndScreenActive()
     {
         endScreen.SetActive(true);
-        SaveManager.Instance.DeleteCheckpoint();
+        SoundManager.Instance.PauseAllSounds();
     }
 
     public void RestoreStateFromCheckpoint(CheckpointData data)

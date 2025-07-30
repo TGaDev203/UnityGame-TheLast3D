@@ -7,8 +7,8 @@ public class SoundManager : MonoBehaviour
     public static SoundManager Instance { get; private set; }
 
     [Header("Audio Sources")]
-    public AudioSource backgroundAudioSource;
-    public AudioSource soundEffectAudioSource;
+    [SerializeField] private AudioSource backgroundAudioSource;
+    [SerializeField] private AudioSource soundEffectAudioSource;
 
     [Header("Audio Clips")]
     [SerializeField] private AudioClip button_01Sound;
@@ -37,7 +37,6 @@ public class SoundManager : MonoBehaviour
     private float footstepTimer;
     private float nextFootstepTime;
 
-
     [Header("Tired Sound")]
     [SerializeField] private AudioClip tiredBreathSound;
     [SerializeField] private float tiredThreshold;
@@ -48,6 +47,11 @@ public class SoundManager : MonoBehaviour
     [Header("Internal State")]
     private const int MAINMENU_INDEX = 0;
     private const int GAMEPLAY_INDEX = 1;
+
+    [Header("References")]
+    private bool hasPlayedEndSound = false;
+
+    [Header("State Flags")]
     private FirstPersonController firstPersonController;
 
     public void PlayButton_01Sound() => PlayOneShotSound(button_01Sound);
@@ -66,11 +70,19 @@ public class SoundManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(this.gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
 
-        else Destroy(gameObject);
+        SceneManager.sceneLoaded += OnSceneLoaded;
 
-        firstPersonController = FindAnyObjectByType<FirstPersonController>();
 
         backgroundAudioSource.volume = PlayerPrefs.GetFloat("BGMVolume", 1f);
         soundEffectAudioSource.volume = PlayerPrefs.GetFloat("SFXVolume", 1f);
@@ -82,8 +94,6 @@ public class SoundManager : MonoBehaviour
         {
             PlayOneShotSound(knockDoorSound);
         }
-
-        PlayBackgroundSound();
     }
 
     private void Update()
@@ -96,13 +106,25 @@ public class SoundManager : MonoBehaviour
 
     public void PlayBackgroundSound()
     {
-        if (backgroundAudioSource == null) return;
+        if (backgroundAudioSource == null || hasPlayedEndSound) return;
 
         backgroundAudioSource.loop = true;
 
         int scene = SceneManager.GetActiveScene().buildIndex;
         backgroundAudioSource.clip = (scene == MAINMENU_INDEX) ? mainMenuSound : gamePlaySound;
         backgroundAudioSource.Play();
+    }
+
+    public void PlayEndSound()
+    {
+        if (backgroundAudioSource == null || endSound == null) return;
+
+        backgroundAudioSource.Stop();
+        backgroundAudioSource.clip = endSound;
+        backgroundAudioSource.loop = true;
+        backgroundAudioSource.Play();
+
+        hasPlayedEndSound = true;
     }
 
     public void PlayOneShotSound(AudioClip clip)
@@ -172,7 +194,6 @@ public class SoundManager : MonoBehaviour
         source.Play();
     }
 
-
     public float GetBackgroundMusicVolume()
     {
         return backgroundAudioSource.volume;
@@ -183,34 +204,6 @@ public class SoundManager : MonoBehaviour
         backgroundAudioSource.volume = value;
         PlayerPrefs.SetFloat("BGMVolume", value);
         PlayerPrefs.Save();
-    }
-
-    public float GetSFXVolume()
-    {
-        return soundEffectAudioSource.volume;
-    }
-
-    public void SetSFXVolume(float value)
-    {
-        soundEffectAudioSource.volume = value;
-        PlayerPrefs.SetFloat("SFXVolume", value);
-        PlayerPrefs.Save();
-    }
-
-    public void SetSFXMuted(bool value)
-    {
-        isFootstepSoundMuted = value;
-        isJumpSoundMuted = value;
-    }
-
-    public void PlayEndSound()
-    {
-        soundEffectAudioSource.Stop();
-        if (endSound == null) return;
-
-        backgroundAudioSource.loop = true;
-        backgroundAudioSource.clip = endSound;
-        backgroundAudioSource.Play();
     }
 
     public void PlayChaseSound(AudioSource source, AudioClip clip)
@@ -224,22 +217,50 @@ public class SoundManager : MonoBehaviour
         source.Play();
     }
 
-    public void StopChaseSound(AudioSource source, AudioClip clip)
+    public float GetSFXVolume()
     {
-        if (source == null || clip == null) return;
 
-        if (source.clip == clip && source.isPlaying)
+        return soundEffectAudioSource.volume;
+    }
+
+    public void SetSFXVolume(float value)
+    {
+        soundEffectAudioSource.volume = value;
+        PlayerPrefs.SetFloat("SFXVolume", value);
+        PlayerPrefs.Save();
+    }
+
+    public float GetEnemyVolume()
+    {
+        float enemyVolume = 0f;
+
+        foreach (AudioSource src in FindObjectsByType<AudioSource>(FindObjectsSortMode.None))
         {
-            source.loop = false;
-            source.Stop();
+            if (src != backgroundAudioSource && src != soundEffectAudioSource)
+            {
+                enemyVolume += src.volume;
+            }
         }
+
+        return enemyVolume;
+    }
+
+    public void SetEnemyVolume(float value)
+    {
+        foreach (AudioSource src in FindObjectsByType<AudioSource>(FindObjectsSortMode.None))
+        {
+            if (src != backgroundAudioSource && src != soundEffectAudioSource)
+            {
+                src.volume = value;
+            }
+        }
+
+        PlayerPrefs.SetFloat("EnemyVolume", value);
+        PlayerPrefs.Save();
     }
 
     public void PauseAllSounds()
     {
-        if (backgroundAudioSource.isPlaying)
-            backgroundAudioSource.Pause();
-
         if (soundEffectAudioSource.isPlaying)
             soundEffectAudioSource.Pause();
 
@@ -254,9 +275,6 @@ public class SoundManager : MonoBehaviour
 
     public void ResumeAllSounds()
     {
-        if (backgroundAudioSource.clip != null && !backgroundAudioSource.isPlaying)
-            backgroundAudioSource.UnPause();
-
         if (soundEffectAudioSource.clip != null && !soundEffectAudioSource.isPlaying)
             soundEffectAudioSource.UnPause();
 
@@ -267,5 +285,15 @@ public class SoundManager : MonoBehaviour
                 src.UnPause();
             }
         }
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.buildIndex == GAMEPLAY_INDEX)
+        {
+            firstPersonController = FindAnyObjectByType<FirstPersonController>();
+        }
+
+        PlayBackgroundSound();
     }
 }

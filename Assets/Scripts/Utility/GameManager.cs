@@ -3,12 +3,18 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    [Header("References")]
+    [SerializeField] private DoorController doorController;
+
+    [Header("Timing")]
     private float deltaTime = 0.0f;
 
     void Start()
     {
         Application.targetFrameRate = 144;
         QualitySettings.vSyncCount = 0;
+        float enemyVolume = PlayerPrefs.GetFloat("EnemyVolume", 1f);
+        SoundManager.Instance?.SetEnemyVolume(enemyVolume);
 
         CheckpointData data = SaveManager.Instance.LoadCheckpoint();
         if (data == null) return;
@@ -16,23 +22,24 @@ public class GameManager : MonoBehaviour
         if (data.sceneName != SceneManager.GetActiveScene().name) return;
 
         GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player == null)
+        if (player != null)
         {
-            // Debug.LogError("Player not found in scene.");
-            return;
+            player.transform.position = new Vector3(data.playerX, data.playerY, data.playerZ);
+            PlayerInventory inventory = player.GetComponent<PlayerInventory>();
+            inventory?.LoadInventoryFromCheckpoint(data);
         }
 
-        player.transform.position = new Vector3(data.playerX, data.playerY, data.playerZ);
-
-        PlayerInventory inventory = player.GetComponent<PlayerInventory>();
-        if (inventory != null)
+        if (data.isEnded)
         {
-            inventory.LoadInventoryFromCheckpoint(data);
-        }
+            GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+            foreach (var enemy in enemies)
+            {
+                enemy.SetActive(false);
+            }
 
-        // Debug.Log("Checkpoint loaded.");
+            SoundManager.Instance?.PlayEndSound();
+        }
     }
-
 
     void Update()
     {

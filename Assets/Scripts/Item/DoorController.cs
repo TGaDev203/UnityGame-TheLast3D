@@ -19,6 +19,11 @@ public class DoorController : MonoBehaviour
     private bool isOpen = false;
     private Coroutine rotateRoutine;
 
+    [Header("State Flags")]
+    private bool isEnded = false;
+
+    public bool IsEnded => isEnded;
+
     private void Awake()
     {
         if (doorLeaf != null && navObstacle == null)
@@ -28,16 +33,29 @@ public class DoorController : MonoBehaviour
     private void Start()
     {
         playerInteractor = FindAnyObjectByType<PlayerInteractor>();
+
+        var data = SaveManager.Instance.LoadCheckpoint();
+        if (data != null)
+        {
+            isEnded = data.isEnded;
+        }
     }
 
     public void ToggleDoor()
     {
         if (CompareTag("MainDoor"))
         {
+            isEnded = true;
             Time.timeScale = 0f;
             playerInteractor.SetEndScreenActive();
-            SoundManager.Instance.soundEffectAudioSource.Stop();
             SoundManager.Instance.PlayEndSound();
+
+            CheckpointData data = SaveManager.Instance.LoadCheckpoint();
+            if (data != null)
+            {
+                data.isEnded = true;
+                SaveManager.Instance.SaveCheckpoint(data);
+            }
         }
 
         if (CompareTag("Locked"))

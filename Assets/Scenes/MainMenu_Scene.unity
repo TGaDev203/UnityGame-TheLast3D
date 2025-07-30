@@ -1181,7 +1181,6 @@ Transform:
   - {fileID: 180858460}
   - {fileID: 2129053554}
   - {fileID: 85904946}
-  - {fileID: 1117795056}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &628508646
@@ -1826,11 +1825,11 @@ Transform:
   m_GameObject: {fileID: 1117795055}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 66.760864, y: -246.77759, z: -9.071986}
+  m_LocalPosition: {x: 2012.7844, y: 870.25684, z: -12.578104}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 600789325}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1117795057
 MonoBehaviour:
@@ -1848,24 +1847,28 @@ MonoBehaviour:
   soundEffectAudioSource: {fileID: 1117795059}
   button_01Sound: {fileID: 8300000, guid: ea59bcb2dc46a0c4cae3eb2733993ebe, type: 3}
   button_02Sound: {fileID: 8300000, guid: 714010650f02f1e4db4e31f1bc0fb70f, type: 3}
-  beingHitSound: {fileID: 0}
-  closeDoorSound: {fileID: 0}
-  closeChestSound: {fileID: 0}
-  dieSound: {fileID: 0}
-  explosionSound: {fileID: 0}
-  endSound: {fileID: 0}
+  beingHitSound: {fileID: 8300000, guid: 08f00e61fad378b44a4a4d5b0c3eab46, type: 3}
+  closeDoorSound: {fileID: 8300000, guid: 35bb9d505b762894a964edaaf07b34d2, type: 3}
+  closeChestSound: {fileID: 8300000, guid: 9c2af4c92db726e48ac0b74aef8ecba5, type: 3}
+  dieSound: {fileID: 8300000, guid: 75b7a73a8c54a3747b1006a5041d2cb2, type: 3}
+  explosionSound: {fileID: 8300000, guid: ae18221e013eae7489bb7c65b15e70e7, type: 3}
+  endSound: {fileID: 8300000, guid: b73b693a82aac37418e855d1053b7c50, type: 3}
   gamePlaySound: {fileID: 8300000, guid: bbb19e2c8e7feab41850c50f54799a56, type: 3}
-  jumpSound: {fileID: 0}
-  knockDoorSound: {fileID: 0}
-  lockedSound: {fileID: 0}
-  landSound: {fileID: 0}
+  jumpSound: {fileID: 8300000, guid: 013c25010ea5eb444bfd66ca78e8c207, type: 3}
+  knockDoorSound: {fileID: 8300000, guid: 386994d7f1f148142bf61beb033c3d14, type: 3}
+  lockedSound: {fileID: 8300000, guid: 660e9610f20cc0d47b92c2448fa68c4e, type: 3}
+  landSound: {fileID: 8300000, guid: f9ff9bd447f9d7941b13185fa4ed645d, type: 3}
   mainMenuSound: {fileID: 8300000, guid: fb8b7b0ca67c4944a890a0fc667f9c07, type: 3}
-  openDoorSound: {fileID: 0}
-  openChestSound: {fileID: 0}
-  pickupSound: {fileID: 0}
-  footStepSounds: []
-  footstepInterval: 0
-  tiredBreathSound: {fileID: 0}
+  openDoorSound: {fileID: 8300000, guid: f36c16c367f0c13488d86070a7d929a1, type: 3}
+  openChestSound: {fileID: 8300000, guid: 4a6d28b2525676d48a413b8550c6c0a0, type: 3}
+  pickupSound: {fileID: 8300000, guid: d39079df2c1d3614c93c93ec2e37821d, type: 3}
+  footStepSounds:
+  - {fileID: 8300000, guid: 1503958e67964af45af213c1a1827d65, type: 3}
+  - {fileID: 8300000, guid: fe3fb6edd21867748ac1266e6c76c580, type: 3}
+  - {fileID: 8300000, guid: 8d042c97db2898449babc1221ccda2fe, type: 3}
+  - {fileID: 8300000, guid: 1867b6bda732f8f478e58f9e94e7a1c7, type: 3}
+  footstepInterval: 0.5
+  tiredBreathSound: {fileID: 8300000, guid: 4819a7da780675a4c9f3a189a0890f4a, type: 3}
   tiredThreshold: 6
   tiredCooldown: 3
 --- !u!82 &1117795058
@@ -2134,9 +2137,9 @@ MonoBehaviour:
   mainMenuPanel: {fileID: 1293576765}
   optionsMenuPanel: {fileID: 1875920986}
   continueButton: {fileID: 2792430054315611275}
+  warningPopup: {fileID: 180858459}
   buttons: {fileID: 5983351516573524720}
   title: {fileID: 548448876359420492}
-  warningPopup: {fileID: 180858459}
 --- !u!114 &1293576767
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3189,6 +3192,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bgmSlider: {fileID: 925377151}
   sfxSlider: {fileID: 1609100128}
+  enemySoundSlider: {fileID: 0}
 --- !u!114 &1875920988
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4989,3 +4993,4 @@ SceneRoots:
   - {fileID: 1875920991}
   - {fileID: 600789325}
   - {fileID: 75189006}
+  - {fileID: 1117795056}

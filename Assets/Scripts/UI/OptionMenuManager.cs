@@ -6,6 +6,7 @@ public class OptionMenuManager : MonoBehaviour
     [Header("Audio Slider")]
     [SerializeField] private Slider bgmSlider;
     [SerializeField] private Slider sfxSlider;
+    [SerializeField] private Slider enemySoundSlider;
 
     private void Awake()
     {
@@ -24,6 +25,15 @@ public class OptionMenuManager : MonoBehaviour
             sfxSlider.onValueChanged.AddListener(value =>
             {
                 SoundManager.Instance.SetSFXVolume(value);
+            });
+        }
+
+        if (enemySoundSlider != null)
+        {
+            enemySoundSlider.value = SoundManager.Instance.GetEnemyVolume();
+            enemySoundSlider.onValueChanged.AddListener(value =>
+            {
+                SoundManager.Instance.SetEnemyVolume(value);
             });
         }
     }

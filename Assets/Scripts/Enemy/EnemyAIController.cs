@@ -41,7 +41,6 @@ public class EnemyAIController : EnemyBase
     protected override void AttackPlayer()
     {
         base.AttackPlayer();
-        Debug.Log("Chris Walker attacks!");
         enemyAnim.SetVelocity(0f);
         enemyAnim.PerformPauseAction(false);
         enemyAnim.PlayAttack();
