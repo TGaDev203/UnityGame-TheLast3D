@@ -8,20 +8,34 @@ It was created as part of my self-learning and exploration in 3D horror game des
 
 ## 🎥 Short Gameplay Preview
 
-- **Gameplay Demo**
-![Gameplay Demo](Demo/Gif/Gameplay.gif)
+<p align="center">
+  <img src="Demo/Gif/Gameplay.gif" width="840" alt="Gameplay Demo">
+</p>
 
-- **Screenshots**
-![UI](Demo/UI/UI_01.jpg)
-![UI](Demo/UI/UI_02.jpg)
-![UI](Demo/UI/UI_03.jpg)
-![UI](Demo/UI/UI_04.jpg)
-![UI](Demo/UI/UI_05.jpg)
-![UI](Demo/UI/UI_06.jpg)
+<h3 align="center">📱 UI Screenshots</h3>
 
-![Enemies](Demo/Enemies/Enemy_01.png)
-![Enemies](Demo/Enemies/Enemy_02.png)
-![Enemies](Demo/Enemies/Enemy_03.png)
+<p align="center">
+  <img src="Demo/UI/UI_01.jpg" width="400" />
+  <img src="Demo/UI/UI_02.jpg" width="400" />
+</p>
+<p align="center">
+  <img src="Demo/UI/UI_03.jpg" width="400" />
+  <img src="Demo/UI/UI_04.jpg" width="400" />
+</p>
+<p align="center">
+  <img src="Demo/UI/UI_05.jpg" width="400" />
+  <img src="Demo/UI/UI_06.jpg" width="400" />
+</p>
+
+<h3 align="center">👹 Enemies Screenshots</h3>
+
+<p align="center">
+  <img src="Demo/Enemies/Enemy_01.png" width="400" height="400" />
+  <img src="Demo/Enemies/Enemy_02.png" width="400" height="400" />
+</p>
+<p align="center">
+  <img src="Demo/Enemies/Enemy_03.png" width="400" height="400" />
+</p>
 
 ---
 
