@@ -61,6 +61,7 @@ public class SoundManager : MonoBehaviour
     public void PlayCloseDoorSound() => PlayOneShotSound(closeDoorSound);
     public void PlayDieSound() => PlayOneShotSound(dieSound);
     public void PlayExplosionSound() => PlayOneShotSound(explosionSound);
+    public void PlayKnockDoorSound() => PlayOneShotSound(knockDoorSound);
     public void PlayLockedSound() => PlayOneShotSound(lockedSound);
     public void PlayLandSound() => PlayOneShotSound(landSound);
     public void PlayOpenChestSound() => PlayOneShotSound(openChestSound);
@@ -88,13 +89,13 @@ public class SoundManager : MonoBehaviour
         soundEffectAudioSource.volume = PlayerPrefs.GetFloat("SFXVolume", 1f);
     }
 
-    private void Start()
-    {
-        if (SceneManager.GetActiveScene().buildIndex == GAMEPLAY_INDEX)
-        {
-            PlayOneShotSound(knockDoorSound);
-        }
-    }
+    // private void Start()
+    // {
+    //     if (SceneManager.GetActiveScene().buildIndex == GAMEPLAY_INDEX)
+    //     {
+    //         PlayOneShotSound(knockDoorSound);
+    //     }
+    // }
 
     private void Update()
     {

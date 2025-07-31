@@ -52,6 +52,7 @@ public class PlayerInteractor : MonoBehaviour
         var checkpoint = SaveManager.Instance.LoadCheckpoint();
         if (checkpoint == null)
         {
+            StartCoroutine(PlayWelcomeSequence());
             NotificationManager.Instance.ShowWelcomeMessage();
         }
         else
@@ -78,7 +79,6 @@ public class PlayerInteractor : MonoBehaviour
             placedDynamite = Instantiate(dynamitePrefab, dynamitePlacePoint.position, Quaternion.identity);
         }
     }
-
 
     private void Update()
     {
@@ -374,5 +374,12 @@ public class PlayerInteractor : MonoBehaviour
         if (data == null) return;
 
         RestoreStateFromCheckpoint(data);
+    }
+
+    private IEnumerator PlayWelcomeSequence()
+    {
+        yield return new WaitForSeconds(0.1f);
+
+        SoundManager.Instance.PlayKnockDoorSound();
     }
 }
