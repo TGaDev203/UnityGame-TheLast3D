@@ -89,14 +89,6 @@ public class SoundManager : MonoBehaviour
         soundEffectAudioSource.volume = PlayerPrefs.GetFloat("SFXVolume", 1f);
     }
 
-    // private void Start()
-    // {
-    //     if (SceneManager.GetActiveScene().buildIndex == GAMEPLAY_INDEX)
-    //     {
-    //         PlayOneShotSound(knockDoorSound);
-    //     }
-    // }
-
     private void Update()
     {
         if (footstepTimer > 0)
