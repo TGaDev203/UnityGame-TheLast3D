@@ -6,6 +6,11 @@ It was created as part of my self-learning and exploration in 3D horror game des
 
 ---
 
+🔗 Play Now on Itch.io
+<p align="center"> 👉 <a href="https://tgadev203.itch.io/thelast3d" target="_blank"><strong>Play TheLast3D on Itch.io</strong></a> </p>
+
+---
+
 ## 🎥 Short Gameplay Preview
 
 <p align="center">
