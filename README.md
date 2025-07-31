@@ -1,8 +1,10 @@
-# 🧟 The Last 3D — Outlast-Inspired Horror Game Prototype (Mobile Game)
+# 🧟 TheLast3D — Outlast-Inspired Horror Game Prototype (Mobile Game)
 
-**The Last 3D** is my first 3D horror game — a short prototype built with **Unity 6**, inspired by the chilling atmosphere of *Outlast*.
+**TheLast3D** is a first-person horror game prototype developed with Unity 6, designed specifically for mobile. Inspired by Outlast, the game focuses on immersive horror and stealth mechanics in a dark, abandoned facility.
 
-It was created as part of my self-learning and exploration in 3D horror game design.
+Players must explore the eerie environment, avoid hostile enemies, and uncover what happened inside. With no weapons to defend yourself, stealth and observation are key to survival. The game features interactive objects, simple AI behavior, blood effects, and a checkpoint-based saving system.
+
+This is a non-commercial project created for learning and experimentation with 3D horror game development. It remains in prototype phase and may include minor bugs.
 
 ---
 
