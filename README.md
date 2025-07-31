@@ -15,34 +15,14 @@ This is a non-commercial project created for learning and experimentation with 3
 
 ## 🎥 Short Gameplay Preview
 
-<p align="center">
-  <img src="Demo/Gif/Gameplay.gif" width="840" alt="Gameplay Demo">
-</p>
+🎮 Gameplay Demo
+<table align="center"> <tr> <td colspan="2" align="center"> <img src="Demo/Gif/Gameplay.gif" width="840" alt="Gameplay Demo" /> </td> </tr> <tr> <td colspan="2" align="center"> <em>And there’s still more to discover – take a look around in-game!</em> </td> </tr> </table>
 
-<h3 align="center">📱 UI Screenshots</h3>
+📱 UI Screenshots
+<table align="center"> <tr> <td><img src="Demo/UI/UI_01.jpg" width="400" /></td> <td><img src="Demo/UI/UI_02.jpg" width="400" /></td> </tr> <tr> <td><img src="Demo/UI/UI_03.jpg" width="400" /></td> <td><img src="Demo/UI/UI_04.jpg" width="400" /></td> </tr> <tr> <td><img src="Demo/UI/UI_05.jpg" width="400" /></td> <td><img src="Demo/UI/UI_06.jpg" width="400" /></td> </tr> </table>
 
-<p align="center">
-  <img src="Demo/UI/UI_01.jpg" width="400" />
-  <img src="Demo/UI/UI_02.jpg" width="400" />
-</p>
-<p align="center">
-  <img src="Demo/UI/UI_03.jpg" width="400" />
-  <img src="Demo/UI/UI_04.jpg" width="400" />
-</p>
-<p align="center">
-  <img src="Demo/UI/UI_05.jpg" width="400" />
-  <img src="Demo/UI/UI_06.jpg" width="400" />
-</p>
-
-<h3 align="center">👹 Enemies Screenshots</h3>
-
-<p align="center">
-  <img src="Demo/Enemies/Enemy_01.png" width="400" height="400" />
-  <img src="Demo/Enemies/Enemy_02.png" width="400" height="400" />
-</p>
-<p align="center">
-  <img src="Demo/Enemies/Enemy_03.png" width="400" height="400" />
-</p>
+👹 Enemies Screenshots
+<table align="center"> <tr> <td><img src="Demo/Enemies/Enemy_01.png" width="400" height="400" /></td> <td><img src="Demo/Enemies/Enemy_02.png" width="400" height="400" /></td> </tr> <tr> <td colspan="2" align="center"><img src="Demo/Enemies/Enemy_03.png" width="400" height="400" /></td> </tr> </table>
 
 ---
 
