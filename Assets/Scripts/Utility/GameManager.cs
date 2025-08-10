@@ -9,7 +9,7 @@ public class GameManager : MonoBehaviour
     [Header("Timing")]
     private float deltaTime = 0.0f;
 
-    void Start()
+    private void Start()
     {
         Application.targetFrameRate = 144;
         QualitySettings.vSyncCount = 0;
@@ -41,7 +41,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void Update()
+    private void Update()
     {
         deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
     }
