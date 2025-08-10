@@ -1,41 +1,55 @@
-# 🧟 The Last 3D — Outlast-Inspired Horror Game Prototype (Mobile Game)
+# 🧟 TheLast3D — Outlast-Inspired Horror Game Prototype (Mobile Game)
 
-**The Last 3D** is my first 3D horror game — a short prototype built with **Unity 6**, inspired by the chilling atmosphere of *Outlast*.
+**TheLast3D** is a first-person horror game prototype developed with Unity 6, designed specifically for mobile. Inspired by Outlast, the game focuses on immersive horror and stealth mechanics in a dark, abandoned facility.
 
-It was created as part of my self-learning and exploration in 3D horror game design.
+Players must explore the eerie environment, avoid hostile enemies, and uncover what happened inside. With no weapons to defend yourself, stealth and observation are key to survival. The game features interactive objects, simple AI behavior, blood effects, and a checkpoint-based saving system.
+
+This is a non-commercial project created for learning and experimentation with 3D horror game development. It remains in prototype phase and may include minor bugs.
+
+---
+
+🔗 Play Now on Itch.io
+<p align="center"> 👉 <a href="https://tgadev203.itch.io/thelast3d" target="_blank"><strong>Play TheLast3D on Itch.io</strong></a> </p>
 
 ---
 
 ## 🎥 Short Gameplay Preview
 
+<h3>🎮 Gameplay Demo</h3>
 <p align="center">
-  <img src="Demo/Gif/Gameplay.gif" width="840" alt="Gameplay Demo">
+  <img src="Demo/Gif/Gameplay.gif" width="840" alt="Gameplay Demo" />
+  <br />
+  <em>And there’s still more to discover – take a look around in-game!</em>
 </p>
 
-<h3 align="center">📱 UI Screenshots</h3>
+<h3>📱 UI Screenshots</h3>
+<table align="center">
+  <tr>
+    <td><img src="Demo/UI/UI_01.jpg" width="400" /></td>
+    <td><img src="Demo/UI/UI_02.jpg" width="400" /></td>
+  </tr>
+  <tr>
+    <td><img src="Demo/UI/UI_03.jpg" width="400" /></td>
+    <td><img src="Demo/UI/UI_04.jpg" width="400" /></td>
+  </tr>
+  <tr>
+    <td><img src="Demo/UI/UI_05.jpg" width="400" /></td>
+    <td><img src="Demo/UI/UI_06.jpg" width="400" /></td>
+  </tr>
+</table>
 
-<p align="center">
-  <img src="Demo/UI/UI_01.jpg" width="400" />
-  <img src="Demo/UI/UI_02.jpg" width="400" />
-</p>
-<p align="center">
-  <img src="Demo/UI/UI_03.jpg" width="400" />
-  <img src="Demo/UI/UI_04.jpg" width="400" />
-</p>
-<p align="center">
-  <img src="Demo/UI/UI_05.jpg" width="400" />
-  <img src="Demo/UI/UI_06.jpg" width="400" />
-</p>
-
-<h3 align="center">👹 Enemies Screenshots</h3>
-
-<p align="center">
-  <img src="Demo/Enemies/Enemy_01.png" width="400" height="400" />
-  <img src="Demo/Enemies/Enemy_02.png" width="400" height="400" />
-</p>
-<p align="center">
-  <img src="Demo/Enemies/Enemy_03.png" width="400" height="400" />
-</p>
+<h3>👹 Enemies Screenshots</h3>
+<table align="center">
+  <tr>
+    <td><img src="Demo/Enemies/Enemy_01.png" width="400" height="400" /></td>
+    <td><img src="Demo/Enemies/Enemy_02.png" width="400" height="400" /></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <img src="Demo/Enemies/Enemy_03.png" width="400" height="400" />
+    </td>
+  </tr>
+</table>
 
 ---
 
